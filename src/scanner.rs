@@ -234,14 +234,80 @@ mod tests {
     fn test_number() {
         assert_eq!(Token::Number(123.00000123), tokenize(" 123.00000123 ").next().unwrap());
         assert_eq!(Token::Number(123.), tokenize(" 123. ").next().unwrap());
+        assert_eq!(Token::Number(123.0), tokenize(" 123 ").next().unwrap());
     }
 
     #[test]
     fn test_strings() {
-        assert_eq!(Token::String("abcd888_".to_string()), tokenize("\"abcd888_\"").next().unwrap())
-        
+        assert_eq!(Token::String("abcd888_".to_string()), tokenize("\"abcd888_\"").next().unwrap());
+        assert_eq!(Token::String("".to_string()), tokenize("\"\"").next().unwrap());
     }
 
+    #[test]
+    fn test_identifier() {
+        let input = "andy formless fo _ _123 _abc ab123";
+        let mut tokens = tokenize(input);
+        assert_eq!(Token::Identifier("andy".to_string()), tokens.next().unwrap());
+        assert_eq!(Token::Identifier("formless".to_string()), tokens.next().unwrap());
+        assert_eq!(Token::Identifier("fo".to_string()), tokens.next().unwrap());
+        assert_eq!(Token::Identifier("_".to_string()), tokens.next().unwrap());
+        assert_eq!(Token::Identifier("_123".to_string()), tokens.next().unwrap());
+        assert_eq!(Token::Identifier("_abc".to_string()), tokens.next().unwrap());
+        assert_eq!(Token::Identifier("ab123".to_string()), tokens.next().unwrap());
+
+    }
+
+    #[test]
+    fn test_keywords() {
+        assert_eq!(Token::And, tokenize("and").next().unwrap());
+        assert_eq!(Token::Class, tokenize("class").next().unwrap());
+        assert_eq!(Token::Else, tokenize("else").next().unwrap());
+        assert_eq!(Token::False, tokenize("false").next().unwrap());
+        assert_eq!(Token::For, tokenize("for").next().unwrap());
+        assert_eq!(Token::Fun, tokenize("fun").next().unwrap());
+        assert_eq!(Token::If, tokenize("if").next().unwrap());
+        assert_eq!(Token::Nil, tokenize("nil").next().unwrap());
+        assert_eq!(Token::Or, tokenize("or").next().unwrap());
+        assert_eq!(Token::Print, tokenize("print").next().unwrap());
+        assert_eq!(Token::Return, tokenize("return").next().unwrap());
+        assert_eq!(Token::Super, tokenize("super").next().unwrap());
+        assert_eq!(Token::This, tokenize("this").next().unwrap());
+        assert_eq!(Token::True, tokenize("true").next().unwrap());
+        assert_eq!(Token::Var, tokenize("var").next().unwrap());
+        assert_eq!(Token::While, tokenize("while").next().unwrap());
+    }
+
+    #[test]
+    fn test_punctuation() {
+        assert_eq!(Token::LeftParen, tokenize("(").next().unwrap());
+        assert_eq!(Token::RightParen, tokenize(")").next().unwrap());
+        assert_eq!(Token::LeftBrace, tokenize("{").next().unwrap());
+        assert_eq!(Token::RightBrace, tokenize("}").next().unwrap());
+        assert_eq!(Token::Comma, tokenize(",").next().unwrap());
+        assert_eq!(Token::Dot, tokenize(".").next().unwrap());
+        assert_eq!(Token::Minus, tokenize("-").next().unwrap());
+        assert_eq!(Token::Plus, tokenize("+").next().unwrap());
+        assert_eq!(Token::Semicolon, tokenize(";").next().unwrap());
+        assert_eq!(Token::Slash, tokenize("/").next().unwrap());
+        assert_eq!(Token::Star, tokenize("*").next().unwrap());
+    }
+
+    #[test]
+    fn test_operators() {
+        assert_eq!(Token::Bang, tokenize("!").next().unwrap());
+        assert_eq!(Token::BangEqual, tokenize("!=").next().unwrap());
+        assert_eq!(Token::Equal, tokenize("=").next().unwrap());
+        assert_eq!(Token::EqualEqual, tokenize("==").next().unwrap());
+        assert_eq!(Token::Greater, tokenize(">").next().unwrap());
+        assert_eq!(Token::GreaterEqual, tokenize(">=").next().unwrap());
+        assert_eq!(Token::Less, tokenize("<").next().unwrap());
+        assert_eq!(Token::LessEqual, tokenize("<=").next().unwrap());
+    }
+
+    #[test]
+    fn test_whitespace() {
+        
+    }
 
 
 }
