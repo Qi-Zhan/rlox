@@ -1,0 +1,19 @@
+use rlox::interpreter::run;
+use rlox::error::InterpretResult;
+
+const SOURCE: &str = r#"
+class Foo {
+  init() {
+    return "result"; // Error at 'return': Can't return a value from an initializer.
+  }
+}
+
+"#;
+
+#[test]
+fn test_files_constructor_return_value() {
+    
+    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    
+    assert!(matches!(result, InterpretResult::CompilerError{..}));
+}

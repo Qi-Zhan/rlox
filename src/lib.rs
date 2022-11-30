@@ -4,4 +4,4 @@ mod compiler;
 mod vm;
 mod value;
 mod chunk;
-mod error;
+pub mod error;

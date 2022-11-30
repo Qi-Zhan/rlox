@@ -1,0 +1,27 @@
+use rlox::interpreter::run;
+use rlox::error::InterpretResult;
+
+const SOURCE: &str = r#"
+print !true;     // expect: false
+print !false;    // expect: true
+print !!true;    // expect: true
+
+print !123;      // expect: false
+print !0;        // expect: false
+
+print !nil;     // expect: true
+
+print !"";       // expect: false
+
+fun foo() {}
+print !foo;      // expect: false
+
+"#;
+
+#[test]
+fn test_files_operator_not() {
+    let expected_output = vec!["false","true","true","false","false","true","false","false"];
+    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    
+    assert_eq!(result, InterpretResult::Ok(expected_output));
+}

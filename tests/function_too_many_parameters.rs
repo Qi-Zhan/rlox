@@ -1,6 +1,9 @@
-class Foo {
-  // 256 parameters.
-  method(
+use rlox::interpreter::run;
+use rlox::error::InterpretResult;
+
+const SOURCE: &str = r#"
+// 256 parameters.
+fun f(
     a1,
     a2,
     a3,
@@ -256,4 +259,13 @@ class Foo {
     a253,
     a254,
     a255, a) {} // Error at 'a': Can't have more than 255 parameters.
+
+"#;
+
+#[test]
+fn test_files_function_too_many_parameters() {
+    
+    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    
+    assert!(matches!(result, InterpretResult::CompilerError{..}));
 }

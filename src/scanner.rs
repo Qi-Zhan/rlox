@@ -81,10 +81,10 @@ impl<'a> Cursor<'a> {
 
     fn skip_whitespace(&mut self) {
         while let Some(c) = self.peek() {
-            if !c.is_whitespace() {
+            if !c.is_whitespace() && c != '\n'  {
                 break;
             }
-            self.chars.next();
+            self.consume();
         }
     }
 
@@ -123,6 +123,18 @@ impl<'a> Cursor<'a> {
             string.push(self.consume().unwrap());
         }
         Token::Number(string.parse().unwrap())
+    }
+
+    fn string(&mut self) -> Token {
+        let mut string = String::new();
+        while !self.is_eof() && self.peek().unwrap() != '"' {
+            string.push(self.consume().unwrap());
+        }
+        if self.is_eof() {
+            return Token::Error("Unterminated string.".to_string());
+        }
+        self.consume();
+        Token::String(string)
     }
 
     /// Pareses a token from the input string.
@@ -185,22 +197,16 @@ impl<'a> Cursor<'a> {
                 }
                 Token::Slash
             }
-            ' ' | '\r' | '\t' => {
+            ' ' | '\r' | '\t'  => {
                 self.skip_whitespace();
                 return self.advance_token();
             }
-            '"' => {
-                let mut string = String::new();
-                while self.peek() != Some('"') && !self.is_eof() {
-                    string.push(self.consume().unwrap());
-                }
-                if self.is_eof() {
-                    Token::Error(format!("line {} column {}: Unterminated string.", self.line, self.column));
-                }
-                // The closing ".
+            '\n' => {
                 self.consume();
-                return Token::String(string);
+                return self.advance_token();
             }
+            '"' =>  self.string(),
+            
             c if c.is_digit(10) => {
                 self.number(c)
             }
@@ -232,7 +238,8 @@ mod tests {
 
     #[test]
     fn test_strings() {
-        assert_eq!(Token::String("abcd888_".to_string()), tokenize("abcd888_").next().unwrap())
+        assert_eq!(Token::String("abcd888_".to_string()), tokenize("\"abcd888_\"").next().unwrap())
+        
     }
 
 

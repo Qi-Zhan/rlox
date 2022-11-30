@@ -1,6 +1,11 @@
+use rlox::interpreter::run;
+use rlox::error::InterpretResult;
+
+const SOURCE: &str = r#"
+fun foo() {}
 {
   var a = 1;
-  true.method(
+  foo(
      a, // 1
      a, // 2
      a, // 3
@@ -257,4 +262,14 @@
      a, // 254
      a, // 255
      a); // Error at 'a': Can't have more than 255 arguments.
+}
+
+"#;
+
+#[test]
+fn test_files_function_too_many_arguments() {
+    
+    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    
+    assert!(matches!(result, InterpretResult::CompilerError{..}));
 }
