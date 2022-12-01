@@ -2,7 +2,7 @@
 
 use crate::chunk::Chunk;
 use crate::scanner::Token;
-use crate::error::InterpretResult;
+use crate::result::InterpretResult;
 use crate::parser::{ParseRule, Parser};
 use crate::value::*;
 use crate::opcode::*;

@@ -2,7 +2,7 @@
 
 use crate::compiler::ByteEmiter;
 use crate::scanner::Token;
-use crate::error::InterpretResult;
+use crate::result::InterpretResult;
 
 // pub const RULES: [(&str, fn(&str) -> InterpretResult<()>); 1] = [
    
@@ -60,8 +60,9 @@ impl Parser {
     }
 
     pub fn parse(&mut self, tokens: impl Iterator<Item = Token>, emiter: &mut ByteEmiter) -> InterpretResult<()> {
-        todo!("Implement parser")
-
+        // first parese expression
+        self.consume_expression(tokens, emiter);
+        InterpretResult::Ok(())
     }
 
     pub fn advance(&mut self) {

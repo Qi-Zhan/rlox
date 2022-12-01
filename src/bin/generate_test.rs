@@ -3,7 +3,7 @@ use std::{fs, io::{Read, Write}, path};
 use walkdir::WalkDir;
 use regex::Regex;
 use lazy_static::lazy_static;
-use rlox::error::InterpretResult;
+use rlox::result::InterpretResult;
 
 const TEST_DIR:&str = "tests";
 const FILE_DIR:&str = "test_files";

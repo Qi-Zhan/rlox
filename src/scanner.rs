@@ -328,5 +328,4 @@ mod tests {
         assert_eq!(Token::LessEqual, tokenize("<=").next().unwrap());
     }
 
-
 }

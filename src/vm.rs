@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::{chunk::Chunk, value::Value, error::InterpretResult};
+use crate::{chunk::Chunk, value::Value, result::InterpretResult};
 use crate::opcode::*;
 
 #[derive(Debug)]

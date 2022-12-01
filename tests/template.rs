@@ -1,5 +1,5 @@
 use rlox::interpreter::run;
-use rlox::error::InterpretResult;
+use rlox::result::InterpretResult;
 
 const SOURCE: &str = r#""#;
 
