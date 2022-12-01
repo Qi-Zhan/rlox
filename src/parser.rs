@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use crate::compiler::ByteEmiter;
 use crate::scanner::Token;
 use crate::error::InterpretResult;
 
@@ -27,34 +28,63 @@ enum Precedence {
     Primary,
 }
 
+impl From<usize> for Precedence {
+    fn from(value: usize) -> Self {
+        match value {
+            0 => Precedence::None,
+            1 => Precedence::Assignment,
+            2 => Precedence::Or,
+            3 => Precedence::And,
+            4 => Precedence::Equality,
+            5 => Precedence::Comparison,
+            6 => Precedence::Term,
+            7 => Precedence::Factor,
+            8 => Precedence::Unary,
+            9 => Precedence::Call,
+            10 => Precedence::Primary,
+            _ => panic!("Invalid precedence"),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct Parser {
-    current: usize,
-    previous: usize,
-    had_error: bool,
-    panic_mode: bool,
+    stack:  Vec<Token>,
 }
 
 impl Parser {
     pub fn new() -> Self {
-        Self { current: 0, previous: 0, had_error: false, panic_mode: false }
-    }
-
-    pub fn advance(&mut self) {
-        self.previous = self.current;
-        loop {
-            self.current += 1;
-            break;
-            // todo
+        Self { 
+            stack: vec![],
         }
     }
 
-    pub fn expression(&mut self) {
-        self.parse_precedence(Precedence::Assignment);
+    pub fn parse(&mut self, tokens: impl Iterator<Item = Token>, emiter: &mut ByteEmiter) -> InterpretResult<()> {
+        todo!("Implement parser")
+
+    }
+
+    pub fn advance(&mut self) {
+        todo!()
     }
 
     fn parse_precedence(&mut self, precedence: Precedence) {
         // todo
+        todo!()
     }
+
+    fn consume(&mut self, token: Token, message: &str) -> InterpretResult<()> {
+        todo!()
+    }
+
+    fn consume_if (&mut self, tokens: impl Iterator<Item = Token>, emiter: &mut ByteEmiter ) -> InterpretResult<()> {
+        todo!()
+    }
+
+    fn consume_expression(&mut self, tokens: impl Iterator<Item = Token>, emiter: &mut ByteEmiter) {
+        todo!()
+    }
+
 
 
 }

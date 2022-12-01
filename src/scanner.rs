@@ -41,7 +41,7 @@ pub enum Token {
     Identifier(String),
     String(String),
     Number(f64),
-    /* Keywords. */
+    // Keywords.
     And,
     Class,
     Else,

@@ -39,8 +39,6 @@ fn run_file(path:&str) {
     let content = fs::read_to_string(path)
         .expect("No such file!");
     run(content.as_str());
-    // let mut interpreter = Interpreter::new(&content);
-    // interpreter.interpreter();
 }
 
 fn main(){

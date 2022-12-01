@@ -66,7 +66,7 @@ fn extract_comment(content:&str) -> InterpretResult<Vec<&str>> {
             return InterpretResult::<Vec<&str>>::RuntimeError("".to_string());
         }
         if _ERROR_LINE_PATTERN.is_match(line) || _SYNTAX_ERROR_PATTERN.is_match(line) {
-            return InterpretResult::<Vec<&str>>::LexError("".to_string());
+            return InterpretResult::<Vec<&str>>::CompileError("".to_string());
         }
         if _EXPECTED_ERROR_PATTERN.is_match(line) {
             return InterpretResult::<Vec<&str>>::CompileError("".to_string());

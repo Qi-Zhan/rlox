@@ -2,14 +2,17 @@ use crate::chunk::Chunk;
 use crate::compiler::Compiler;
 use crate::vm::VM;
 use crate::error::InterpretResult;
-use crate::scanner::tokenize;
+use crate::scanner::{tokenize, Token};
 
 // #[cfg(not(test))]
 pub fn run(string:&str) -> InterpretResult<Vec<String>> {
     // println!("{}", string);
     let mut tokens = tokenize(string);
     for token in tokens.by_ref() {
-        println!("{:?}", token)
+        println!("{:?}", token);
+        if let Token::Error(s) = token {
+            return InterpretResult::LexError(s);
+        }
     }
 
     let mut compiler = Compiler::new();
@@ -17,7 +20,7 @@ pub fn run(string:&str) -> InterpretResult<Vec<String>> {
 
     match chunk {
         InterpretResult::Ok(chunk) => {
-            println!("{:?}", chunk);
+            println!("{:#?}", chunk);
             let mut vm = VM::new(Chunk::new());
             let result = vm.interpreter(chunk);
             match result {
@@ -37,12 +40,3 @@ pub fn run(string:&str) -> InterpretResult<Vec<String>> {
 
 }
 
-// #[cfg(test)]
-// pub fn run(string:&str) -> InterpretResult<Vec<&str>> {
-//     println!("{}", string);
-//     let tokens = tokenize(string);
-//     for token in tokens {
-//         println!("{:?}", token)
-//     }
-//     InterpretResult::Ok(vec![])  // todo
-// }

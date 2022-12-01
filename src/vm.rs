@@ -37,8 +37,13 @@ impl<'a> VM {
             
             match instruction {
                 OP_RETURN => {
-                    // self.chunk.print_value(self.stack.pop().unwrap());
-                    return InterpretResult::Ok(self.prints.clone());
+                    match self.stack.pop() {
+                        Some(value) => {
+                            self.prints.push(value.to_string());
+                            return InterpretResult::Ok(self.prints.clone());
+                        }
+                        None => return InterpretResult::RuntimeError("Stack is empty".to_string()),
+                    }
                 }
                 OP_CONSTANT => {
                     let constant = self.read_constant();

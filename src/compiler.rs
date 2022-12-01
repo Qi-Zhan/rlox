@@ -7,11 +7,11 @@ use crate::parser::{ParseRule, Parser};
 use crate::value::*;
 use crate::opcode::*;
 
+#[derive(Debug)]
 pub struct Compiler {
 
     parser: Parser,
     byteemiter: ByteEmiter,
-
 
 }
 
@@ -24,8 +24,8 @@ impl Compiler {
     }
 
     pub fn compile(&mut self, tokens: impl Iterator<Item = Token>) -> InterpretResult<Chunk> {
+        self.parser.parse(tokens, &mut self.byteemiter);
         self.parser.advance();
-        self.parser.expression();
         InterpretResult::Ok(self.byteemiter.return_chunk())
 
     }
@@ -33,8 +33,7 @@ impl Compiler {
     
 
 #[derive(Debug)]
-struct ByteEmiter {
-
+pub struct ByteEmiter {
     chunk: Chunk,
 }
 
@@ -109,3 +108,5 @@ impl ByteEmiter {
 
 
 }
+
+
