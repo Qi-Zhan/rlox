@@ -9,7 +9,7 @@ if (true) "ok"; else var foo;
 
 #[test]
 fn test_files_if_var_in_else() {
-    let expected_output = vec![];
+    
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::LexError{..}));

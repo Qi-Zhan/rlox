@@ -264,7 +264,7 @@ fun f(
 
 #[test]
 fn test_files_function_too_many_parameters() {
-    let expected_output = vec![];
+    
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::CompileError{..}));

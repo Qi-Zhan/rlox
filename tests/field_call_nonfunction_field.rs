@@ -13,7 +13,7 @@ foo.bar(); // expect runtime error: Can only call functions and classes.
 
 #[test]
 fn test_files_field_call_nonfunction_field() {
-    let expected_output = vec![];
+    
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::RuntimeError{..}));

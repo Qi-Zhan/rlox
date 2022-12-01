@@ -17,7 +17,7 @@ class B < A {
 
 #[test]
 fn test_files_super_parenthesized() {
-    let expected_output = vec![];
+    
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::LexError{..}));

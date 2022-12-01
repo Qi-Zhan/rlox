@@ -10,7 +10,7 @@ for (var a = 1; {}; a = a + 1) {}
 
 #[test]
 fn test_files_for_statement_condition() {
-    let expected_output = vec![];
+    
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::LexError{..}));

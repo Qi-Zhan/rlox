@@ -11,7 +11,7 @@ const SOURCE: &str = r#"
 
 #[test]
 fn test_files_class_local_inherit_self() {
-    let expected_output = vec![];
+    
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::CompileError{..}));

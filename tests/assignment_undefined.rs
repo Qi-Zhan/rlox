@@ -8,7 +8,7 @@ unknown = "what"; // expect runtime error: Undefined variable 'unknown'.
 
 #[test]
 fn test_files_assignment_undefined() {
-    let expected_output = vec![];
+    
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::RuntimeError{..}));

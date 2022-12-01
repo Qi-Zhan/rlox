@@ -19,7 +19,7 @@ const SOURCE: &str = r#"
 
 #[test]
 fn test_files_function_local_mutual_recursion() {
-    let expected_output = vec![];
+    
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::RuntimeError{..}));

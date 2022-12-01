@@ -11,7 +11,7 @@ fun foo(arg,
 
 #[test]
 fn test_files_variable_duplicate_parameter() {
-    let expected_output = vec![];
+    
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::CompileError{..}));

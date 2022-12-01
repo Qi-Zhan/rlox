@@ -10,7 +10,7 @@ foo(a | b);
 
 #[test]
 fn test_files_unexpected_character() {
-    let expected_output = vec![];
+    
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::LexError{..}));

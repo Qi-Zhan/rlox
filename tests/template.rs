@@ -1,9 +1,7 @@
 use rlox::interpreter::run;
 use rlox::error::InterpretResult;
 
-const SOURCE: &str = r#"
-TBD_SOURCE
-"#;
+const SOURCE: &str = r#""#;
 
 #[test]
 fn _test_name_() {

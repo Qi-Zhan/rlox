@@ -9,7 +9,7 @@ while (true) var foo;
 
 #[test]
 fn test_files_while_var_in_body() {
-    let expected_output = vec![];
+    
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::LexError{..}));

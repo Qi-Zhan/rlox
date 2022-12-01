@@ -9,7 +9,7 @@ if (true) fun foo() {}
 
 #[test]
 fn test_files_if_fun_in_then() {
-    let expected_output = vec![];
+    
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::LexError{..}));

@@ -86,12 +86,14 @@ fn read_content(path: &str) -> String {
 /// generate test file content from test file content and expected output/error
 fn generate_test_content(src_file_name: &str, src_file_content: &String, result: InterpretResult<Vec<&str>>) -> String {
     let mut test_file_content = TEMPLATE.clone();
+    // replace test name
     test_file_content = test_file_content.replace("_test_name_", &src_file_name.replace("/", "_"));
     test_file_content = test_file_content.replace(".lox", "");
-    test_file_content = test_file_content.replace("TBD_SOURCE", src_file_content);
-
+    // replace SOURCE
+    test_file_content = test_file_content.replace("r#\"\"#", &("r#\"\n".to_string() + src_file_content.as_str() + "\n\"#"));
+    
     let origin_assert = "assert_eq!(result, InterpretResult::Ok(expected_output));";
-    let origin_expect = "let expected_output = vec![\"TBD_OUTPUT\"];";
+    let origin_expect = "let expected_output = vec![];";
 
     match result {
         InterpretResult::Ok(expected_outputs) => {

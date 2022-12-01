@@ -15,7 +15,7 @@ Foo().method(1, 2, 3, 4); // expect runtime error: Expected 2 arguments but got 
 
 #[test]
 fn test_files_method_extra_arguments() {
-    let expected_output = vec![];
+    
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::RuntimeError{..}));

@@ -43,7 +43,7 @@ fun f() {
 
 #[test]
 fn test_files_limit_no_reuse_constants() {
-    let expected_output = vec![];
+    
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::CompileError{..}));
