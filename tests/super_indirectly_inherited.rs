@@ -25,8 +25,8 @@ C().foo();
 
 #[test]
 fn test_files_super_indirectly_inherited() {
-    let expected_output = vec!["C.foo()","A.foo()"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["C.foo()".to_string(),"A.foo()".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

@@ -16,8 +16,8 @@ Foo().method(); // expect: variable
 
 #[test]
 fn test_files_variable_local_from_method() {
-    let expected_output = vec!["variable"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["variable".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

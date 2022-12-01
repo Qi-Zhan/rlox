@@ -20,8 +20,8 @@ returnFunCallWithArg(printArg, "hello world"); // expect: hello world
 
 #[test]
 fn test_files_function_nested_call_with_arguments() {
-    let expected_output = vec!["hello world"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["hello world".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

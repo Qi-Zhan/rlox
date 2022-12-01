@@ -20,8 +20,8 @@ print "ok"; // expect: ok
 
 #[test]
 fn test_files_closure_unused_closure() {
-    let expected_output = vec!["ok"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["ok".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

@@ -9,8 +9,8 @@ print "str" + "ing"; // expect: string
 
 #[test]
 fn test_files_operator_add() {
-    let expected_output = vec!["579","string"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["579".to_string(),"string".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

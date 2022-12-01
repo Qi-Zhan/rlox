@@ -16,8 +16,8 @@ print c; // expect: c
 
 #[test]
 fn test_files_assignment_associativity() {
-    let expected_output = vec!["c","c","c"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["c".to_string(),"c".to_string(),"c".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

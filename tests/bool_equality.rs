@@ -30,8 +30,8 @@ print false != "";      // expect: true
 
 #[test]
 fn test_files_bool_equality() {
-    let expected_output = vec!["true","false","false","true","false","false","false","false","false","false","true","true","false","true","true","true","true","true"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["true".to_string(),"false".to_string(),"false".to_string(),"true".to_string(),"false".to_string(),"false".to_string(),"false".to_string(),"false".to_string(),"false".to_string(),"false".to_string(),"true".to_string(),"true".to_string(),"false".to_string(),"true".to_string(),"true".to_string(),"true".to_string(),"true".to_string(),"true".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

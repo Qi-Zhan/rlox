@@ -11,8 +11,8 @@ var a = "outer";
 
 #[test]
 fn test_files_variable_use_local_in_initializer() {
+    let expected_output = vec![];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
-    
-    assert!(matches!(result, InterpretResult::CompilerError{..}));
+    assert!(matches!(result, InterpretResult::CompileError{..}));
 }

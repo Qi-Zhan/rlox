@@ -22,8 +22,8 @@ foo.bar(1, 2);
 
 #[test]
 fn test_files_field_call_function_field() {
-    let expected_output = vec!["bar","1","2"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["bar".to_string(),"1".to_string(),"2".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

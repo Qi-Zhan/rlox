@@ -15,8 +15,8 @@ const SOURCE: &str = r#"
 
 #[test]
 fn test_files_function_local_recursion() {
-    let expected_output = vec!["21"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["21".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

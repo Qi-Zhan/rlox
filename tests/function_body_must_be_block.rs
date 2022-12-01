@@ -10,8 +10,8 @@ fun f() 123;
 
 #[test]
 fn test_files_function_body_must_be_block() {
+    let expected_output = vec![];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
-    
-    assert!(matches!(result, InterpretResult::LexerError{..}));
+    assert!(matches!(result, InterpretResult::LexError{..}));
 }

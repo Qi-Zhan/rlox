@@ -32,8 +32,8 @@ f();
 
 #[test]
 fn test_files_closure_nested_closure() {
-    let expected_output = vec!["a","b","c"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["a".to_string(),"b".to_string(),"c".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

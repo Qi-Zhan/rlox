@@ -22,8 +22,8 @@ f();
 
 #[test]
 fn test_files_closure_close_over_later_variable() {
-    let expected_output = vec!["b","a"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["b".to_string(),"a".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

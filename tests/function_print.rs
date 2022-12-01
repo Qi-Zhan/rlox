@@ -11,8 +11,8 @@ print clock; // expect: <native fn>
 
 #[test]
 fn test_files_function_print() {
-    let expected_output = vec!["<fn foo>","<native fn>"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["<fn foo>".to_string(),"<native fn>".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

@@ -45,8 +45,8 @@ bar.fooPrint();
 
 #[test]
 fn test_files_inheritance_set_fields_from_base_class() {
-    let expected_output = vec!["foo 1","foo 2","bar 1","bar 2","bar 1","bar 2"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["foo 1".to_string(),"foo 2".to_string(),"bar 1".to_string(),"bar 2".to_string(),"bar 1".to_string(),"bar 2".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

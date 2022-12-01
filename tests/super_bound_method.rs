@@ -26,8 +26,8 @@ closure("arg"); // expect: A.method(arg)
 
 #[test]
 fn test_files_super_bound_method() {
-    let expected_output = vec!["A.method(arg)"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["A.method(arg)".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

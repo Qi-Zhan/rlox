@@ -29,8 +29,8 @@ derived.method(); // expect: Base.method()
 
 #[test]
 fn test_files_super_reassign_superclass() {
-    let expected_output = vec!["Base.method()","Base.method()"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["Base.method()".to_string(),"Base.method()".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

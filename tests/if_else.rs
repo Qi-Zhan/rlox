@@ -13,8 +13,8 @@ if (false) nil; else { print "block"; } // expect: block
 
 #[test]
 fn test_files_if_else() {
-    let expected_output = vec!["good","good","block"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["good".to_string(),"good".to_string(),"block".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

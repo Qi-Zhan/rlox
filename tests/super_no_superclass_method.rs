@@ -16,8 +16,8 @@ Derived().foo();
 
 #[test]
 fn test_files_super_no_superclass_method() {
-    
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec![];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::RuntimeError{..}));
 }

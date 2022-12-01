@@ -57,8 +57,8 @@ for (; false;) for (;;) 1;
 
 #[test]
 fn test_files_for_syntax() {
-    let expected_output = vec!["1","2","3","0","1","2","done","0","1","0","1","2","0","1"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["1".to_string(),"2".to_string(),"3".to_string(),"0".to_string(),"1".to_string(),"2".to_string(),"done".to_string(),"0".to_string(),"1".to_string(),"0".to_string(),"1".to_string(),"2".to_string(),"0".to_string(),"1".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

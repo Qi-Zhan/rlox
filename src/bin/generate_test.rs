@@ -63,13 +63,13 @@ fn extract_comment(content:&str) -> InterpretResult<Vec<&str>> {
             // println!("get expect: {}", captures.get(1).unwrap().as_str());
         });
         if _EXPECTED_RUNTIME_ERROR_PATTERN.is_match(line) {
-            return InterpretResult::<Vec<&str>>::RuntimeError("");
+            return InterpretResult::<Vec<&str>>::RuntimeError("".to_string());
         }
         if _ERROR_LINE_PATTERN.is_match(line) || _SYNTAX_ERROR_PATTERN.is_match(line) {
-            return InterpretResult::<Vec<&str>>::LexerError("");
+            return InterpretResult::<Vec<&str>>::LexError("".to_string());
         }
         if _EXPECTED_ERROR_PATTERN.is_match(line) {
-            return InterpretResult::<Vec<&str>>::CompilerError("");
+            return InterpretResult::<Vec<&str>>::CompileError("".to_string());
         }
     }
     InterpretResult::<Vec<&str>>::Ok(comment)
@@ -96,18 +96,19 @@ fn generate_test_content(src_file_name: &str, src_file_content: &String, result:
     match result {
         InterpretResult::Ok(expected_outputs) => {
             let outputs: Vec<String> = expected_outputs.into_iter().map(|output| {
-               "\"".to_string() + output + "\""
+               "\"".to_string() + output + "\"" + ".to_string()"
             }).collect();
             let outputs = outputs.join(",");
-            test_file_content = test_file_content.replace("\"TBD_OUTPUT\"", &outputs);
+            let outputs = "vec![".to_string() + outputs.as_str() + "]";
+            test_file_content = test_file_content.replace("vec![]", &outputs);
         },
-        InterpretResult::CompilerError(_) => {
+        InterpretResult::CompileError(_) => {
             test_file_content = test_file_content.replace(origin_expect, "");
-            test_file_content = test_file_content.replace(origin_assert, "assert!(matches!(result, InterpretResult::CompilerError{..}));");
+            test_file_content = test_file_content.replace(origin_assert, "assert!(matches!(result, InterpretResult::CompileError{..}));");
         },
-        InterpretResult::LexerError(_) => {
+        InterpretResult::LexError(_) => {
             test_file_content = test_file_content.replace(origin_expect, "");
-            test_file_content = test_file_content.replace(origin_assert, "assert!(matches!(result, InterpretResult::LexerError{..}));");
+            test_file_content = test_file_content.replace(origin_assert, "assert!(matches!(result, InterpretResult::LexError{..}));");
         },
         InterpretResult::RuntimeError(_) => {
             test_file_content = test_file_content.replace(origin_expect, "");

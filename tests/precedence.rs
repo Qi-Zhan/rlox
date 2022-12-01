@@ -39,8 +39,8 @@ print (2 * (6 - (2 + 2))); // expect: 4
 
 #[test]
 fn test_files_precedence() {
-    let expected_output = vec!["14","8","4","0","true","true","true","true","0","0","0","0","4"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["14".to_string(),"8".to_string(),"4".to_string(),"0".to_string(),"true".to_string(),"true".to_string(),"true".to_string(),"true".to_string(),"0".to_string(),"0".to_string(),"0".to_string(),"0".to_string(),"4".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

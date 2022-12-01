@@ -2,3 +2,4 @@
 .DS_Store
 history.txt
 /test_files
+/tests/*

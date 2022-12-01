@@ -8,8 +8,8 @@ const SOURCE: &str = r#"
 
 #[test]
 fn test_files_operator_divide_num_nonnum() {
-    
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec![];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::RuntimeError{..}));
 }

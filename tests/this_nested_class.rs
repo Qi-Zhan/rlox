@@ -27,8 +27,8 @@ Outer().method();
 
 #[test]
 fn test_files_this_nested_class() {
-    let expected_output = vec!["Outer instance","Outer instance","Inner instance"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["Outer instance".to_string(),"Outer instance".to_string(),"Inner instance".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

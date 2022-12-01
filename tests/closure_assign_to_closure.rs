@@ -34,8 +34,8 @@ g();
 
 #[test]
 fn test_files_closure_assign_to_closure() {
-    let expected_output = vec!["local","after f","after f","after g"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["local".to_string(),"after f".to_string(),"after f".to_string(),"after g".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

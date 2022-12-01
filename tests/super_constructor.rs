@@ -23,8 +23,8 @@ Derived();
 
 #[test]
 fn test_files_super_constructor() {
-    let expected_output = vec!["Derived.init()","Base.init(a, b)"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["Derived.init()".to_string(),"Base.init(a, b)".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

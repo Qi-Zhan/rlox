@@ -26,8 +26,8 @@ foo2.fn(1);
 
 #[test]
 fn test_files_field_method_binds_this() {
-    let expected_output = vec!["foo1","1"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["foo1".to_string(),"1".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

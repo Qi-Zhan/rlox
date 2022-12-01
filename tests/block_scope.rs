@@ -15,8 +15,8 @@ print a; // expect: outer
 
 #[test]
 fn test_files_block_scope() {
-    let expected_output = vec!["inner","outer"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["inner".to_string(),"outer".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

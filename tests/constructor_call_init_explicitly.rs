@@ -22,8 +22,8 @@ print foo.field; // expect: init
 
 #[test]
 fn test_files_constructor_call_init_explicitly() {
-    let expected_output = vec!["Foo.init(one)","Foo.init(two)","Foo instance","init"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["Foo.init(one)".to_string(),"Foo.init(two)".to_string(),"Foo instance".to_string(),"init".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

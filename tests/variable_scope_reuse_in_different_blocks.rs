@@ -16,8 +16,8 @@ const SOURCE: &str = r#"
 
 #[test]
 fn test_files_variable_scope_reuse_in_different_blocks() {
-    let expected_output = vec!["first","second"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["first".to_string(),"second".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

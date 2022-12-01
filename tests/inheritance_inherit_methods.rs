@@ -21,8 +21,8 @@ bar.override(); // expect: bar
 
 #[test]
 fn test_files_inheritance_inherit_methods() {
-    let expected_output = vec!["foo","bar","bar"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["foo".to_string(),"bar".to_string(),"bar".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

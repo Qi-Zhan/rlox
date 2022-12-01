@@ -14,8 +14,8 @@ Foo();
 
 #[test]
 fn test_files_assignment_to_this() {
+    let expected_output = vec![];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
-    
-    assert!(matches!(result, InterpretResult::CompilerError{..}));
+    assert!(matches!(result, InterpretResult::CompileError{..}));
 }

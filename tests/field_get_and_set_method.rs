@@ -32,8 +32,8 @@ method(2);
 
 #[test]
 fn test_files_field_get_and_set_method() {
-    let expected_output = vec!["other","1","method","2"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["other".to_string(),"1".to_string(),"method".to_string(),"2".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

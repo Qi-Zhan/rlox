@@ -14,8 +14,8 @@ class B < A {
 
 #[test]
 fn test_files_super_super_without_name() {
+    let expected_output = vec![];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
-    
-    assert!(matches!(result, InterpretResult::CompilerError{..}));
+    assert!(matches!(result, InterpretResult::CompileError{..}));
 }

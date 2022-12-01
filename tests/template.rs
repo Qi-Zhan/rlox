@@ -7,8 +7,8 @@ TBD_SOURCE
 
 #[test]
 fn _test_name_() {
-    let expected_output = vec!["TBD_OUTPUT"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec![];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

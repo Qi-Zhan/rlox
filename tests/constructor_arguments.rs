@@ -18,8 +18,8 @@ print foo.b; // expect: 2
 
 #[test]
 fn test_files_constructor_arguments() {
-    let expected_output = vec!["init","1","2"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["init".to_string(),"1".to_string(),"2".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

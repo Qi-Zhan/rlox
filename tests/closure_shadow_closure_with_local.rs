@@ -19,8 +19,8 @@ const SOURCE: &str = r#"
 
 #[test]
 fn test_files_closure_shadow_closure_with_local() {
-    let expected_output = vec!["closure","shadow","closure"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["closure".to_string(),"shadow".to_string(),"closure".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

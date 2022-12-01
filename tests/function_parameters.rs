@@ -33,8 +33,8 @@ print f8(1, 2, 3, 4, 5, 6, 7, 8); // expect: 36
 
 #[test]
 fn test_files_function_parameters() {
-    let expected_output = vec!["0","1","3","6","10","15","21","28","36"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["0".to_string(),"1".to_string(),"3".to_string(),"6".to_string(),"10".to_string(),"15".to_string(),"21".to_string(),"28".to_string(),"36".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

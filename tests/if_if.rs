@@ -17,8 +17,8 @@ if (a = true) print a; // expect: true
 
 #[test]
 fn test_files_if_if() {
-    let expected_output = vec!["good","block","true"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["good".to_string(),"block".to_string(),"true".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

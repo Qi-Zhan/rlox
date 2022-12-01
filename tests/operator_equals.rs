@@ -21,8 +21,8 @@ print 0 == "0"; // expect: false
 
 #[test]
 fn test_files_operator_equals() {
-    let expected_output = vec!["true","true","false","true","false","true","false","false","false","false"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["true".to_string(),"true".to_string(),"false".to_string(),"true".to_string(),"false".to_string(),"true".to_string(),"false".to_string(),"false".to_string(),"false".to_string(),"false".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

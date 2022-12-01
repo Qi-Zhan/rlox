@@ -14,8 +14,8 @@ print "ok"; // expect: ok
 
 #[test]
 fn test_files_block_empty() {
-    let expected_output = vec!["ok"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["ok".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

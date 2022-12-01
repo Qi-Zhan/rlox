@@ -29,8 +29,8 @@ baz.inBaz(); // expect: in baz
 
 #[test]
 fn test_files_class_inherited_method() {
-    let expected_output = vec!["in foo","in bar","in baz"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["in foo".to_string(),"in bar".to_string(),"in baz".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

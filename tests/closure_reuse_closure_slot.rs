@@ -23,8 +23,8 @@ const SOURCE: &str = r#"
 
 #[test]
 fn test_files_closure_reuse_closure_slot() {
-    let expected_output = vec!["a"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["a".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

@@ -8,8 +8,8 @@ this; // Error at 'this': Can't use 'this' outside of a class.
 
 #[test]
 fn test_files_this_this_at_top_level() {
+    let expected_output = vec![];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
-    
-    assert!(matches!(result, InterpretResult::CompilerError{..}));
+    assert!(matches!(result, InterpretResult::CompileError{..}));
 }

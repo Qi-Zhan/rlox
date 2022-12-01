@@ -29,8 +29,8 @@ callCaller();
 
 #[test]
 fn test_files_regression_40() {
-    let expected_output = vec!["false"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["false".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

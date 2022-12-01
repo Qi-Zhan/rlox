@@ -14,8 +14,8 @@ print -0.001;  // expect: -0.001
 
 #[test]
 fn test_files_number_literals() {
-    let expected_output = vec!["123","987654","0","-0","123.456","-0.001"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["123".to_string(),"987654".to_string(),"0".to_string(),"-0".to_string(),"123.456".to_string(),"-0.001".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

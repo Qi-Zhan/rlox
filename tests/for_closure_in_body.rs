@@ -29,8 +29,8 @@ f3(); // expect: 4
 
 #[test]
 fn test_files_for_closure_in_body() {
-    let expected_output = vec!["4","1","4","2","4","3"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["4".to_string(),"1".to_string(),"4".to_string(),"2".to_string(),"4".to_string(),"3".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

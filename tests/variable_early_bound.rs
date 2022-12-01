@@ -17,8 +17,8 @@ var a = "outer";
 
 #[test]
 fn test_files_variable_early_bound() {
-    let expected_output = vec!["outer","outer"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["outer".to_string(),"outer".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

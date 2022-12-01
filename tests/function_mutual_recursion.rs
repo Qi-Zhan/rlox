@@ -19,8 +19,8 @@ print isOdd(3); // expect: true
 
 #[test]
 fn test_files_function_mutual_recursion() {
-    let expected_output = vec!["true","true"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["true".to_string(),"true".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

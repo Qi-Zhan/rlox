@@ -2,8 +2,6 @@
 
 use std::str::Chars;
 
-use crate::value::Value;
-
 pub fn tokenize(input: &str) -> impl Iterator<Item = Token> + '_ {
     let mut cursor = Cursor::new(input);
     std::iter::from_fn(move || {
@@ -42,7 +40,7 @@ pub enum Token {
     // Literals.
     Identifier(String),
     String(String),
-    Number(Value),
+    Number(f64),
     /* Keywords. */
     And,
     Class,
@@ -96,8 +94,36 @@ impl<'a> Cursor<'a> {
         self.chars.clone().next()
     }
 
-    fn identifier_or_keyword(&mut self) -> Token {
-        todo!("identifier_or_keyword")
+    fn identifier_or_keyword(&mut self, begin: char) -> Token {
+        let mut identifier = String::new();
+        identifier.push(begin);
+        while let Some(c) = self.peek() {
+            if c.is_alphanumeric() || c == '_' {
+                identifier.push(self.consume().unwrap());
+            } else {
+                break;
+            }
+        }
+        match identifier.as_str() {
+            "and" => Token::And,
+            "class" => Token::Class,
+            "else" => Token::Else,
+            "false" => Token::False,
+            "for" => Token::For,
+            "fun" => Token::Fun,
+            "if" => Token::If,
+            "nil" => Token::Nil,
+            "or" => Token::Or,
+            "print" => Token::Print,
+            "return" => Token::Return,
+            "super" => Token::Super,
+            "this" => Token::This,
+            "true" => Token::True,
+            "var" => Token::Var,
+            "while" => Token::While,
+            _ => Token::Identifier(identifier),
+        }
+
     }
 
     fn consume(&mut self) -> Option<char> {
@@ -139,6 +165,7 @@ impl<'a> Cursor<'a> {
 
     /// Pareses a token from the input string.
     fn advance_token(&mut self) -> Token {
+
         let first_char = match self.consume() {
             Some(c) => c,
             None => return Token::Eof,
@@ -202,20 +229,17 @@ impl<'a> Cursor<'a> {
                 return self.advance_token();
             }
             '\n' => {
-                self.consume();
                 return self.advance_token();
             }
             '"' =>  self.string(),
-            
             c if c.is_digit(10) => {
                 self.number(c)
             }
-
+            c if c.is_alphabetic() || c == '_' => {
+                self.identifier_or_keyword(c)
+            }
             _ => Token::Error(format!("line {} column {}: Unexpected character {}", self.line, self.column, first_char))
         }
-
-
-
 
     }
 
@@ -302,11 +326,6 @@ mod tests {
         assert_eq!(Token::GreaterEqual, tokenize(">=").next().unwrap());
         assert_eq!(Token::Less, tokenize("<").next().unwrap());
         assert_eq!(Token::LessEqual, tokenize("<=").next().unwrap());
-    }
-
-    #[test]
-    fn test_whitespace() {
-        
     }
 
 

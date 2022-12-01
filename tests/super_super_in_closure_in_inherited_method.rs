@@ -33,8 +33,8 @@ C().getClosure()(); // expect: A
 
 #[test]
 fn test_files_super_super_in_closure_in_inherited_method() {
-    let expected_output = vec!["A"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["A".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

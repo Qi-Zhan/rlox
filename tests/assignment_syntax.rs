@@ -12,8 +12,8 @@ print c; // expect: var
 
 #[test]
 fn test_files_assignment_syntax() {
-    let expected_output = vec!["var","var"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["var".to_string(),"var".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

@@ -10,8 +10,8 @@ print !!true;   // expect: true
 
 #[test]
 fn test_files_bool_not() {
-    let expected_output = vec!["false","true","true"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["false".to_string(),"true".to_string(),"true".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

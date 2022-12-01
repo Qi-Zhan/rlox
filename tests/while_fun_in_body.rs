@@ -9,8 +9,8 @@ while (true) fun foo() {}
 
 #[test]
 fn test_files_while_fun_in_body() {
+    let expected_output = vec![];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
-    
-    assert!(matches!(result, InterpretResult::LexerError{..}));
+    assert!(matches!(result, InterpretResult::LexError{..}));
 }

@@ -15,8 +15,8 @@ print "" and "ok"; // expect: ok
 
 #[test]
 fn test_files_logical_operator_and_truth() {
-    let expected_output = vec!["false","nil","ok","ok","ok"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["false".to_string(),"nil".to_string(),"ok".to_string(),"ok".to_string(),"ok".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

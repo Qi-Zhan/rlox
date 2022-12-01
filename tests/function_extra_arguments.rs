@@ -13,8 +13,8 @@ f(1, 2, 3, 4); // expect runtime error: Expected 2 arguments but got 4.
 
 #[test]
 fn test_files_function_extra_arguments() {
-    
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec![];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::RuntimeError{..}));
 }

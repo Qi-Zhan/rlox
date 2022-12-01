@@ -24,8 +24,8 @@ print closure(); // expect: Base
 
 #[test]
 fn test_files_super_closure() {
-    let expected_output = vec!["Base"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["Base".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

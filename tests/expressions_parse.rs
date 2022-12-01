@@ -10,8 +10,8 @@ const SOURCE: &str = r#"
 
 #[test]
 fn test_files_expressions_parse() {
-    let expected_output = vec!["(+ (group (- 5.0 (group (- 3.0 1.0)))) (- 1.0))"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["(+ (group (- 5.0 (group (- 3.0 1.0)))) (- 1.0))".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }

@@ -10,8 +10,8 @@ fun foo(a, b c, d, e, f) {}
 
 #[test]
 fn test_files_function_missing_comma_in_parameters() {
+    let expected_output = vec![];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
-    
-    assert!(matches!(result, InterpretResult::LexerError{..}));
+    assert!(matches!(result, InterpretResult::LexError{..}));
 }

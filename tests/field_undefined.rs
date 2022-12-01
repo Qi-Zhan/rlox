@@ -11,8 +11,8 @@ foo.bar; // expect runtime error: Undefined property 'bar'.
 
 #[test]
 fn test_files_field_undefined() {
-    
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec![];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert!(matches!(result, InterpretResult::RuntimeError{..}));
 }

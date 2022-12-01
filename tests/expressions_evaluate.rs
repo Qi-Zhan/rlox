@@ -11,8 +11,8 @@ const SOURCE: &str = r#"
 
 #[test]
 fn test_files_expressions_evaluate() {
-    let expected_output = vec!["2"];
-    let result: InterpretResult<Vec<&str>>= run(SOURCE);
+    let expected_output = vec!["2".to_string()];
+    let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));
 }
