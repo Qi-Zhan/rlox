@@ -1,5 +1,5 @@
 
-use std::{fs, io::{Read, Write}, path};
+use std::{fs, io::{Read, Write}, path, env};
 use walkdir::WalkDir;
 use regex::Regex;
 use lazy_static::lazy_static;
@@ -139,11 +139,18 @@ fn show_all_file_paths(root:&str) -> Vec<String> {
 }
 
 fn main() {
-    let files = show_all_file_paths(FILE_DIR).into_iter().filter(|file | {
-        file.ends_with(".lox") && !file.contains("benchmark") && !file.contains("scanning")
-    }).collect::<Vec<String>>();
-    // generate_test_file(files[0].as_str());
-    // generate_test_file("test_files/block/scope.lox")
+    let args = env::args().collect::<Vec<String>>();
+
+    let files = if args.len() >= 1 {
+        show_all_file_paths(FILE_DIR).into_iter().filter(|file| {
+            file.contains(args[1].as_str())
+        }).collect::<Vec<String>>()
+
+    } else {
+        show_all_file_paths(FILE_DIR).into_iter().filter(|file | {
+            file.ends_with(".lox") && !file.contains("benchmark")
+        }).collect::<Vec<String>>()
+    };
     for file in &files { // for every test file
         println!("{file}");
         generate_test_file(file);

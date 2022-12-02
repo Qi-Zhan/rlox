@@ -63,7 +63,7 @@ impl<'a> VM {
                     let a = self.stack.pop().unwrap();
                     self.stack.push(a / b)
                 }
-                OP_SUBSTRACT => {
+                OP_SUBTRACT => {
                     let b = self.stack.pop().unwrap();
                     let a = self.stack.pop().unwrap();
                     self.stack.push(a - b)
@@ -73,7 +73,54 @@ impl<'a> VM {
                     let a = self.stack.pop().unwrap();
                     self.stack.push(a * b)
                 }
-
+                OP_PRINT => {
+                    let value = self.stack.pop().unwrap();
+                    self.prints.push(value.to_string());
+                }
+                OP_AND => {
+                    let b = self.stack.pop().unwrap();
+                    let a = self.stack.pop().unwrap();
+                    self.stack.push(a & b)
+                }
+                OP_OR => {
+                    let b = self.stack.pop().unwrap();
+                    let a = self.stack.pop().unwrap();
+                    self.stack.push(a | b)
+                }
+                OP_NOT => {
+                    let value = self.stack.pop().unwrap();
+                    self.stack.push(!value)
+                }
+                OP_EQUAL => {
+                    let b = self.stack.pop().unwrap();
+                    let a = self.stack.pop().unwrap();
+                    self.stack.push(Value::Bool(a == b))
+                }
+                OP_GT => {
+                    let b = self.stack.pop().unwrap();
+                    let a = self.stack.pop().unwrap();
+                    self.stack.push(Value::Bool(a > b))
+                }
+                OP_LT => {
+                    let b = self.stack.pop().unwrap();
+                    let a = self.stack.pop().unwrap();
+                    self.stack.push(Value::Bool(a < b))
+                }
+                OP_GE => {
+                    let b = self.stack.pop().unwrap();
+                    let a = self.stack.pop().unwrap();
+                    self.stack.push(Value::Bool(a >= b))
+                }
+                OP_LE => {
+                    let b = self.stack.pop().unwrap();
+                    let a = self.stack.pop().unwrap();
+                    self.stack.push(Value::Bool(a <= b))
+                }
+                OP_NE => {
+                    let b = self.stack.pop().unwrap();
+                    let a = self.stack.pop().unwrap();
+                    self.stack.push(Value::Bool(a != b))
+                }
                 _ => {
                     return InterpretResult::CompileError("Unknown opcode".to_string()); 
                 }
@@ -109,7 +156,6 @@ impl<'a> VM {
 
 impl<'a> std::fmt::Display for VM {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "          ")?;
         for value in &self.stack {
             write!(f, "[ ")?;
             write!(f, "{value}")?;

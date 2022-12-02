@@ -16,7 +16,8 @@ fn repl() -> Result<()> {
         match readline {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
-                run(&line);
+                let res = run(&line);
+                println!("{:?}", res);
             },
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C");

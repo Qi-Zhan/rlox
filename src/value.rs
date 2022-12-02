@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::{ops::{Add, Sub, Mul, Div, Neg}, fmt::{Display, Formatter}};
+use std::{ops::*, fmt::{Display, Formatter}, cmp::Ordering};
 
 
 
@@ -12,7 +12,7 @@ pub enum Value {
     Nil,
 }
     
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Obj {
     Str(String),
     Function,
@@ -57,8 +57,6 @@ impl Value {
         Self::Nil
     }
     
-
-
 }
 
 impl Add for Value {
@@ -67,8 +65,7 @@ impl Add for Value {
     fn add(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
             (Value::Number(a), Value::Number(b)) => Value::Number(a + b),
-            // (Value::String(a), Value::String(b)) => Value::String(a + &b),
-            // TODO String add
+            (Value::Obj(Obj::Str(a)), Value::Obj(Obj::Str(b))) => Value::Obj(Obj::Str(a + &b)),
             _ => panic!("Invalid operands"),
         }
     }
@@ -123,13 +120,77 @@ impl Neg for Value {
     
 }
 
+impl PartialOrd for Value {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        match (self, other) {
+            (Value::Number(a), Value::Number(b)) => a.partial_cmp(b),
+            _ => panic!("Invalid operands"),
+        }
+    }
+}
+
+impl Eq for Value {
+
+}
+
+impl Ord for Value {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match (self, other) {
+            (Value::Number(a), Value::Number(b)) => a.partial_cmp(b).unwrap(),
+            _ => panic!("Invalid operands"),
+        }
+    }
+}
+
+impl BitAnd for Value {
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            (Value::Bool(a), Value::Bool(b)) => Value::Bool(a & b),
+            _ => panic!("Invalid operands"),
+        }
+    }
+    
+}
+
+impl BitOr for Value {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            (Value::Bool(a), Value::Bool(b)) => Value::Bool(a | b),
+            _ => panic!("Invalid operands"),
+        }
+    }
+    
+}
+
+impl Not for Value {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Value::Bool(a) => Value::Bool(!a),
+            _ => panic!("Invalid operands"),
+        }
+    }
+    
+}
+
 impl Display for Value {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Value::Number(number) => write!(f, "{}", number),
+            Value::Number(number) => {
+                if *number as i64 as f64 == *number {
+                    write!(f, "{}", *number as i64)
+                } else {
+                    write!(f, "{}", number)
+                }
+            }
             Value::Obj(obj) => write!(f, "{:?}", obj),
             Value::Bool(boolean) => write!(f, "{}", boolean),
-            Value::Nil => write!(f, "nil"),
+            Value::Nil => write!(f, "nil"), 
         }
     }
 }

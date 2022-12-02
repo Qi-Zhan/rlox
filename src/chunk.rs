@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use std::fmt::Display;
+
 use crate::value::{ValueArray, Value};
 use crate::opcode::*;
 
@@ -28,12 +30,6 @@ impl Chunk {
 
     pub fn disassemble_instruction(&self, offset: usize) -> usize {
         print!("{:04} ", offset);
-        // if offset > 0 && self.lines[offset] == self.lines[offset - 1] {
-        //     print!("   | ");
-        // } else {
-        //     print!("{:04} ", self.lines[offset]);
-        // }
-
         let instruction = self.code[offset];
         match instruction {
             OP_CONSTANT => {
@@ -49,7 +45,7 @@ impl Chunk {
                 println!("OP_ADD");
                 offset + 1
             }
-            OP_SUBSTRACT => {
+            OP_SUBTRACT => {
                 println!("OP_SUBSTRACT");
                 offset + 1
             }
@@ -61,6 +57,11 @@ impl Chunk {
                 println!("OP_RETURN");
                 offset + 1
             }
+            OP_MULTIPLY => {
+                println!("OP_MULTIPLY");
+                offset + 1
+            }
+            
             _ => {
                 println!("Unknown opcode {}", instruction);
                 offset + 1
@@ -69,3 +70,12 @@ impl Chunk {
     }
 }
 
+impl Display for Chunk {
+    fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut offset = 0;
+        while offset < self.code.len() {
+            offset = self.disassemble_instruction(offset);
+        }
+        Ok(())
+    }
+}
