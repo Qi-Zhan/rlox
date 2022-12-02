@@ -1,7 +1,8 @@
+#![allow(dead_code)]
+
 use std::{ops::*, fmt::{Display, Formatter}, cmp::Ordering};
 
 use crate::result::InterpretResult;
-
 
 
 #[derive(Debug, Clone, PartialEq)]
@@ -140,8 +141,10 @@ impl BitAnd for Value {
 
     fn bitand(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Value::Bool(a), Value::Bool(b)) => InterpretResult::Ok(Value::Bool(a & b)),
-            _ => InterpretResult::RuntimeError("Operands must be two booleans.".to_string()),
+            (Value::Bool(true), b) => InterpretResult::Ok(b),
+            (Value::Bool(false), _) => InterpretResult::Ok(Value::Bool(false)),
+            (Value::Nil, _) => InterpretResult::Ok(Value::Nil),
+            (_, b) => InterpretResult::Ok(b),
         }
     }
     
@@ -152,8 +155,10 @@ impl BitOr for Value {
 
     fn bitor(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Value::Bool(a), Value::Bool(b)) => InterpretResult::Ok(Value::Bool(a | b)),
-            _ => InterpretResult::RuntimeError("Operands must be two booleans.".to_string()),
+            (Value::Bool(true), _) => InterpretResult::Ok(Value::Bool(true)),
+            (Value::Bool(false), b) => InterpretResult::Ok(b),
+            (Value::Nil, b) => InterpretResult::Ok(b),
+            (a, _) => InterpretResult::Ok(a),
         }
     }
     
@@ -181,6 +186,7 @@ impl Display for Value {
                     write!(f, "{}", number)
                 }
             }
+            Value::Obj(Obj::Str(s)) => write!(f, "{}", s),
             Value::Obj(obj) => write!(f, "{:?}", obj),
             Value::Bool(boolean) => write!(f, "{}", boolean),
             Value::Nil => write!(f, "nil"), 

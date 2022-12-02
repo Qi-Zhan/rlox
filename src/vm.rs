@@ -26,7 +26,7 @@ impl<'a> VM {
     fn run(&mut self) -> InterpretResult<Vec<String>> {
         loop {
             if cfg!(debug_assertions) {
-                print!("{self}");
+                // print!("{self}");
             }
 
             if self.ip >= self.chunk.code.len() {

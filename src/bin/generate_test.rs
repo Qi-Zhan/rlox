@@ -143,7 +143,7 @@ fn main() {
 
     let files = if args.len() >= 1 {
         show_all_file_paths(FILE_DIR).into_iter().filter(|file| {
-            file.contains(args[1].as_str())
+            file.contains(args[1].as_str()) && file.ends_with(".lox")
         }).collect::<Vec<String>>()
 
     } else {
