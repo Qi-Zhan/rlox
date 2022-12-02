@@ -37,31 +37,14 @@ impl Chunk {
                 println!("OP_CONSTANT {:04} '{:?}'", constant, self.constants.values[constant as usize]);
                 offset + 2
             }
-            OP_NEGATE => {
-                println!("OP_NEGATE");
+            opcode if is_binary_op(opcode) => {
+                println!("{}", opcode2string(opcode));
                 offset + 1
             }
-            OP_ADD => {
-                println!("OP_ADD");
+            opcode if is_unary_op(opcode) => {
+                println!("{}", opcode2string(opcode));
                 offset + 1
             }
-            OP_SUBTRACT => {
-                println!("OP_SUBSTRACT");
-                offset + 1
-            }
-            OP_DIVIDE => {
-                println!("OP_DIVIDE");
-                offset + 1
-            }
-            OP_RETURN => {
-                println!("OP_RETURN");
-                offset + 1
-            }
-            OP_MULTIPLY => {
-                println!("OP_MULTIPLY");
-                offset + 1
-            }
-            
             _ => {
                 println!("Unknown opcode {}", instruction);
                 offset + 1

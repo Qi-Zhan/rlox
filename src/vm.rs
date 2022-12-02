@@ -51,45 +51,46 @@ impl<'a> VM {
                 }
                 OP_NEGATE => {
                     let value = -self.stack.pop().unwrap();
-                    self.stack.push(value)
+                    self.stack.push(value?)
                 }
                 OP_ADD => {
                     let b = self.stack.pop().unwrap();
                     let a = self.stack.pop().unwrap();
-                    self.stack.push(a + b)
+                    self.stack.push((a + b)?)
                 }
                 OP_DIVIDE=> {
                     let b = self.stack.pop().unwrap();
                     let a = self.stack.pop().unwrap();
-                    self.stack.push(a / b)
+                    self.stack.push((a / b)?)
                 }
                 OP_SUBTRACT => {
                     let b = self.stack.pop().unwrap();
                     let a = self.stack.pop().unwrap();
-                    self.stack.push(a - b)
+                    self.stack.push((a - b)?)
                 }
                 OP_MULTIPLY => {
                     let b = self.stack.pop().unwrap();
                     let a = self.stack.pop().unwrap();
-                    self.stack.push(a * b)
+                    self.stack.push((a * b)?)
                 }
                 OP_PRINT => {
                     let value = self.stack.pop().unwrap();
+                    // println!("{}", value); TODO: remove this
                     self.prints.push(value.to_string());
                 }
                 OP_AND => {
                     let b = self.stack.pop().unwrap();
                     let a = self.stack.pop().unwrap();
-                    self.stack.push(a & b)
+                    self.stack.push((a & b)?)
                 }
                 OP_OR => {
                     let b = self.stack.pop().unwrap();
                     let a = self.stack.pop().unwrap();
-                    self.stack.push(a | b)
+                    self.stack.push((a | b)?)
                 }
                 OP_NOT => {
                     let value = self.stack.pop().unwrap();
-                    self.stack.push(!value)
+                    self.stack.push((!value)?)
                 }
                 OP_EQUAL => {
                     let b = self.stack.pop().unwrap();
@@ -99,22 +100,38 @@ impl<'a> VM {
                 OP_GT => {
                     let b = self.stack.pop().unwrap();
                     let a = self.stack.pop().unwrap();
-                    self.stack.push(Value::Bool(a > b))
+                    if a.is_number() && b.is_number() {
+                        self.stack.push(Value::Bool(a > b))
+                    } else {
+                        return InterpretResult::RuntimeError("Operands must be numbers".to_string());
+                    }
                 }
                 OP_LT => {
                     let b = self.stack.pop().unwrap();
                     let a = self.stack.pop().unwrap();
-                    self.stack.push(Value::Bool(a < b))
+                    if a.is_number() && b.is_number() {
+                        self.stack.push(Value::Bool(a < b))
+                    } else {
+                        return InterpretResult::RuntimeError("Operands must be numbers".to_string());
+                    }
                 }
                 OP_GE => {
                     let b = self.stack.pop().unwrap();
                     let a = self.stack.pop().unwrap();
-                    self.stack.push(Value::Bool(a >= b))
+                    if a.is_number() && b.is_number() {
+                        self.stack.push(Value::Bool(a >= b))
+                    } else {
+                        return InterpretResult::RuntimeError("Operands must be numbers".to_string());
+                    }
                 }
                 OP_LE => {
                     let b = self.stack.pop().unwrap();
                     let a = self.stack.pop().unwrap();
-                    self.stack.push(Value::Bool(a <= b))
+                    if a.is_number() && b.is_number() {
+                        self.stack.push(Value::Bool(a <= b))
+                    } else {
+                        return InterpretResult::RuntimeError("Operands must be numbers".to_string());
+                    }
                 }
                 OP_NE => {
                     let b = self.stack.pop().unwrap();
@@ -138,17 +155,6 @@ impl<'a> VM {
     fn read_constant(&mut self) -> Value {
         let index = self.read_byte() as usize;
         self.chunk.constants.values[index].clone()
-    }
-
-    fn debug_trace_execution(&self) {
-        print!("          ");
-        for value in &self.stack {
-            print!("[ ");
-            print!("{value}");
-            print!(" ]");
-        }
-        println!("");
-        self.chunk.disassemble_instruction(self.ip);
     }
 
 

@@ -1,6 +1,6 @@
-#![allow(dead_code)]
-
 use std::{ops::*, fmt::{Display, Formatter}, cmp::Ordering};
+
+use crate::result::InterpretResult;
 
 
 
@@ -41,80 +41,71 @@ impl ValueArray {
 }
 
 impl Value {
-    fn new_number(value: f64) -> Self {
-        Self::Number(value)
-    }
-
-    fn new_obj(value: Obj) -> Self {
-        Self::Obj(value)
-    }
-
-    fn new_bool(value: bool) -> Self {
-        Self::Bool(value)
-    }
-
-    fn new_nil() -> Self {
-        Self::Nil
+    pub fn is_number(&self) -> bool {
+        match self {
+            Value::Number(_) => true,
+            _ => false,
+        }
     }
     
 }
 
 impl Add for Value {
-    type Output = Self;
+    type Output = InterpretResult<Self>;
 
     fn add(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Value::Number(a), Value::Number(b)) => Value::Number(a + b),
-            (Value::Obj(Obj::Str(a)), Value::Obj(Obj::Str(b))) => Value::Obj(Obj::Str(a + &b)),
-            _ => panic!("Invalid operands"),
+            (Value::Number(a), Value::Number(b)) => InterpretResult::Ok(Value::Number(a + b)),
+            (Value::Obj(Obj::Str(a)), Value::Obj(Obj::Str(b))) => InterpretResult::Ok(Value::Obj(Obj::Str(a + &b))),
+            _ => InterpretResult::RuntimeError("Operands must be two numbers or two strings.".to_string()),
         }
     }
     
 }
 
 impl Sub for Value {
-    type Output = Self;
+    type Output = InterpretResult<Self>;
 
     fn sub(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Value::Number(a), Value::Number(b)) => Value::Number(a - b),
-            _ => panic!("Invalid operands"),
+            (Value::Number(a), Value::Number(b)) => InterpretResult::Ok(Value::Number(a - b)),
+            _ => InterpretResult::RuntimeError("Operands must be two numbers.".to_string()),
         }
     }
     
 }
 
 impl Mul for Value {
-    type Output = Self;
+    type Output = InterpretResult<Self>;
 
     fn mul(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Value::Number(a), Value::Number(b)) => Value::Number(a * b),
-            _ => panic!("Invalid operands"),
+            (Value::Number(a), Value::Number(b)) => InterpretResult::Ok(Value::Number(a * b)),
+            _ => InterpretResult::RuntimeError("Operands must be two numbers.".to_string()),
         }
     }
     
 }
 
 impl Div for Value {
-    type Output = Self;
+    type Output = InterpretResult<Self>;
 
     fn div(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Value::Number(a), Value::Number(b)) => Value::Number(a / b),
-            _ => panic!("Invalid operands"),
+            (Value::Number(a), Value::Number(b)) => InterpretResult::Ok(Value::Number(a / b)),
+            _ => InterpretResult::RuntimeError("Operands must be two numbers.".to_string()),
         }
     }
     
 }
 
 impl Neg for Value {
-    type Output = Self;
+    type Output = InterpretResult<Self>;
 
     fn neg(self) -> Self::Output {
         match self {
-            Value::Number(a) => Value::Number(-a),
-            _ => panic!("Invalid operands"),
+            Value::Number(a) => InterpretResult::Ok(Value::Number(-a)),
+            _ => InterpretResult::RuntimeError("Operand must be a number.".to_string()),
         }
     }
     
@@ -124,7 +115,9 @@ impl PartialOrd for Value {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         match (self, other) {
             (Value::Number(a), Value::Number(b)) => a.partial_cmp(b),
-            _ => panic!("Invalid operands"),
+            (Value::Obj(Obj::Str(a)), Value::Obj(Obj::Str(b))) => a.partial_cmp(b),
+
+            _ => None,
         }
     }
 }
@@ -143,36 +136,36 @@ impl Ord for Value {
 }
 
 impl BitAnd for Value {
-    type Output = Self;
+    type Output = InterpretResult<Self>;
 
     fn bitand(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Value::Bool(a), Value::Bool(b)) => Value::Bool(a & b),
-            _ => panic!("Invalid operands"),
+            (Value::Bool(a), Value::Bool(b)) => InterpretResult::Ok(Value::Bool(a & b)),
+            _ => InterpretResult::RuntimeError("Operands must be two booleans.".to_string()),
         }
     }
     
 }
 
 impl BitOr for Value {
-    type Output = Self;
+    type Output = InterpretResult<Self>;
 
     fn bitor(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (Value::Bool(a), Value::Bool(b)) => Value::Bool(a | b),
-            _ => panic!("Invalid operands"),
+            (Value::Bool(a), Value::Bool(b)) => InterpretResult::Ok(Value::Bool(a | b)),
+            _ => InterpretResult::RuntimeError("Operands must be two booleans.".to_string()),
         }
     }
     
 }
 
 impl Not for Value {
-    type Output = Self;
+    type Output = InterpretResult<Self>;
 
     fn not(self) -> Self::Output {
         match self {
-            Value::Bool(a) => Value::Bool(!a),
-            _ => panic!("Invalid operands"),
+            Value::Bool(a) => InterpretResult::Ok(Value::Bool(!a)),
+            _ => InterpretResult::RuntimeError("Operand must be a boolean.".to_string()),
         }
     }
     

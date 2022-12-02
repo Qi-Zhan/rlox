@@ -19,7 +19,42 @@ pub const OP_ASSIGN:u8          = 16;
 pub const OP_PRINT:u8           = 17;
 
 
+pub fn is_binary_op(opcode: u8) -> bool {
+    match opcode {
+        OP_ADD | OP_SUBTRACT | OP_MULTIPLY | OP_DIVIDE | OP_AND | OP_OR | OP_EQUAL | OP_GT | OP_LT | OP_GE | OP_LE | OP_NE => true,
+        _ => false
+    }
+}
 
+pub fn is_unary_op(opcode: u8) -> bool {
+    match opcode {
+        OP_NEGATE | OP_NOT | OP_PRINT => true,
+        _ => false
+    }
+}
 
+pub fn opcode2string(opcode: u8) -> String {
+    match opcode {
+        OP_CONSTANT => "OP_CONSTANT",
+        OP_RETURN => "OP_RETURN",
+        OP_NEGATE => "OP_NEGATE",
+        OP_ADD => "OP_ADD",
+        OP_SUBTRACT => "OP_SUBTRACT",
+        OP_MULTIPLY => "OP_MULTIPLY",
+        OP_DIVIDE => "OP_DIVIDE",
+        OP_NOT => "OP_NOT",
+        OP_EQUAL => "OP_EQUAL",
+        OP_OR => "OP_OR",
+        OP_AND => "OP_AND",
+        OP_GT => "OP_GT",
+        OP_LT => "OP_LT",
+        OP_GE => "OP_GE",
+        OP_LE => "OP_LE",
+        OP_NE => "OP_NE",
+        OP_ASSIGN => "OP_ASSIGN",
+        OP_PRINT => "OP_PRINT",
+        _ => "UNKNOWN"
+    }.to_string()
+}
 
 

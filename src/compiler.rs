@@ -274,7 +274,6 @@ impl Compiler {
                 self.emiter.emit_byte(OP_NOT);
             }
             Some(_) => {
-                println!("consume_some");
                 self.consume_primary(tokens)?
             }
             None => return InterpretResult::CompileError("Expected expression".to_string()),
