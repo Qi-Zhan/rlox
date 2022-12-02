@@ -2,14 +2,19 @@ use rlox::interpreter::run;
 use rlox::result::InterpretResult;
 
 const SOURCE: &str = r#"
-var a = "a";
-var b = "b";
-a + b = "value"; // Error at '=': Invalid assignment target.
+class Foo {
+  Foo() {
+    this = "value"; // Error at '=': Invalid assignment target.
+  }
+}
+
+Foo();
 
 "#;
 
 #[test]
-fn test_files_assignment_infix_operator() {
+#[ignore = "class"]
+fn test_files_assignment_to_this() {
     
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     

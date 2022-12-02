@@ -3,13 +3,12 @@ use rlox::result::InterpretResult;
 
 const SOURCE: &str = r#"
 var a = "a";
-var b = "b";
-a + b = "value"; // Error at '=': Invalid assignment target.
+(a) = "value"; // Error at '=': Invalid assignment target.
 
 "#;
 
 #[test]
-fn test_files_assignment_infix_operator() {
+fn test_files_assignment_grouping() {
     
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     

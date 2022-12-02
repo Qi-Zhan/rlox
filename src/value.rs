@@ -16,6 +16,7 @@ pub enum Value {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Obj {
     Str(String),
+    Var(String),
     Function,
     Native,
     Array,
@@ -187,6 +188,7 @@ impl Display for Value {
                 }
             }
             Value::Obj(Obj::Str(s)) => write!(f, "{}", s),
+            Value::Obj(Obj::Var(s)) => write!(f, "{}", s),
             Value::Obj(obj) => write!(f, "{:?}", obj),
             Value::Bool(boolean) => write!(f, "{}", boolean),
             Value::Nil => write!(f, "nil"), 

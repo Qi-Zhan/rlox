@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use crate::chunk::Chunk;
 use crate::scanner::Token;
 use crate::result::InterpretResult;
@@ -21,7 +19,6 @@ impl Compiler {
     }
 
     pub fn compile(&mut self, tokens: impl Iterator<Item = Token>) -> InterpretResult<Chunk> {
-        println!("Compiling...");
         let mut tokens: Vec<Token> = tokens.collect();
         tokens.reverse();
         self.consume_program(&mut tokens)?;
@@ -49,6 +46,17 @@ impl Compiler {
         let token = tokens.last();
         match token {
             Some(Token::Var) => {
+                self.consume(Token::Var, tokens, "Expected 'var' keyword")?;
+                let global = self.consume_variable(tokens)?;
+                // initial expression or nil
+                if tokens.last() == Some(&Token::Equal) {
+                    self.consume(Token::Equal, tokens, "Expected '='")?;
+                    self.consume_expression(tokens)?;
+                } else {
+                    self.emiter.emit_byte(OP_NIL);
+                }
+                self.consume(Token::Semicolon, tokens, "Expected ';'")?;
+                self.emiter.emit_bytes(OP_DEFINE_GLOBAL, global);
                 InterpretResult::Ok(())
             },
             Some(Token::Class) => {
@@ -98,6 +106,7 @@ impl Compiler {
                 self.consume(Token::Return, tokens, "Expected 'return'")?;
                 self.consume_expression(tokens)?;
                 self.consume(Token::Semicolon, tokens, "Expect ';' after return expression.")?;
+                self.emiter.emit_return();
             },
             Some(Token::For) => { // TODO
                 self.consume(Token::For, tokens, "Expected 'for'")?;
@@ -109,9 +118,10 @@ impl Compiler {
                 self.consume(Token::RightParen, tokens, "Expect ')' after for clauses.")?;
                 self.consume_stmt(tokens)?;
             },
-            _ => {
+            _ => { // expression statement
                 self.consume_expression(tokens)?;
                 self.consume(Token::Semicolon, tokens, "Expect ';' after value.")?;
+                self.emiter.emit_byte(OP_POP);
             },
         }
         InterpretResult::Ok(())
@@ -122,8 +132,30 @@ impl Compiler {
         InterpretResult::Ok(())
     }
 
+    fn is_assignment(&self, tokens: &Vec<Token>) -> bool {
+        if tokens.len() < 2 {
+            return false;
+        }
+        for token in tokens.iter().rev(){
+            if *token == Token::Equal {
+                return true;
+            }
+            if *token == Token::Semicolon {
+                return false;
+            }
+        }
+        false
+    }
+
     fn consume_assignment(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<()> {
-        self.consume_or(tokens)?; // TODO
+        if self.is_assignment(tokens) { // assignment
+            let global = self.consume_variable(tokens)?;
+            self.consume(Token::Equal, tokens, "Expected '='")?;
+            self.consume_assignment(tokens)?;
+            self.emiter.emit_bytes(OP_SET_GLOBAL, global);
+        } else {
+            self.consume_or(tokens)?;
+        }
         InterpretResult::Ok(())
     }
 
@@ -222,7 +254,6 @@ impl Compiler {
     fn consume_term(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<()> {
         self.consume_factor(tokens)?;
         loop {
-
             match tokens.last() {
                 Some(Token::Plus) => {
                     self.consume(Token::Plus, tokens, "Expected '+'")?;
@@ -309,9 +340,25 @@ impl Compiler {
                 self.consume(Token::RightParen, tokens, "Expect ')' after expression.")?;
                 InterpretResult::Ok(())
             }
+            Some(Token::Identifier(id)) => {
+                let id = self.emiter.make_constant(Value::Obj(Obj::Str(id)));
+                self.emiter.emit_byte(OP_GET_GLOBAL);
+                self.emiter.emit_byte(id);
+                InterpretResult::Ok(())      
+            }
             _ => InterpretResult::CompileError("Expect expression.".to_string()),
         }
 
+    }
+
+    fn consume_variable(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<u8> {
+        match tokens.pop() {
+            Some(Token::Identifier(id)) => {
+                let id = self.emiter.make_constant(Value::Obj(Obj::Str(id)));
+                InterpretResult::Ok(id)
+            }
+            _ => InterpretResult::CompileError("Expect variable name.".to_string()),
+        }
     }
 
 }
@@ -329,7 +376,7 @@ impl ByteEmiter {
         }
     }
 
-    pub fn return_chunk(&self) -> Chunk {
+    fn return_chunk(&self) -> Chunk {
         self.chunk.clone()
     }
 
@@ -348,48 +395,13 @@ impl ByteEmiter {
 
     fn emit_constant(&mut self, value: Value) {
         let constant = self.chunk.add_constant(value);
-        if constant > u8::MAX as usize {
-            println!("Too many constants in one chunk.");
-            return;
-        }
         self.emit_bytes(OP_CONSTANT, constant as u8);
     }
 
-    fn emit_constant_number(&mut self, value: f64) {
-        self.emit_constant(Value::Number(value));
+    fn make_constant(&mut self, value: Value) -> u8 {
+        let constant = self.chunk.add_constant(value);
+        constant as u8
     }
-
-    fn emit_constant_string(&mut self, value: String) {
-        let obj = Obj::Str(value);
-        self.emit_constant(Value::Obj(obj));
-    }
-
-    fn emit_constant_bool(&mut self, value: bool) {
-        self.emit_constant(Value::Bool(value));
-    }
-
-    fn emit_constant_nil(&mut self) {
-        self.emit_constant(Value::Nil);
-    }
-
-
-    // fn emit_constant_array(&mut self, value: Vec<Value>) {
-    //     self.emit_constant(Value::Array(value));
-    // }
-
-    // fn emit_constant_hash(&mut self, value: Vec<(Value, Value)>) {
-    //     self.emit_constant(Value::Hash(value));
-    // }
-
-    // fn emit_constant_function(&mut self, value: Vec<u8>) {
-    //     self.emit_constant(Value::Function(value));
-    // }
-
-    // fn emit_constant_native(&mut self, value: fn(Vec<Value>) -> Value) {
-    //     self.emit_constant(Value::Native(value));
-    // }
-
-
 
 
 }

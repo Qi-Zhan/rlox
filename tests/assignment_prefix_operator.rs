@@ -8,7 +8,6 @@ var a = "a";
 "#;
 
 #[test]
-#[ignore]
 fn test_files_assignment_prefix_operator() {
     
     let result: InterpretResult<Vec<String>>= run(SOURCE);

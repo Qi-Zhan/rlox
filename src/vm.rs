@@ -1,20 +1,29 @@
 #![allow(dead_code)]
 
+use std::collections::HashMap;
+
 use crate::{chunk::Chunk, value::Value, result::InterpretResult};
 use crate::opcode::*;
 
 #[derive(Debug)]
 pub struct VM {
-    pub chunk:      Chunk,
-    pub ip:         usize,
-    pub stack:      Vec<Value>,
+    chunk:      Chunk,
+    ip:         usize,
+    stack:      Vec<Value>,
+    globals:    HashMap<String, Value>,
     /// for test
-    pub prints   : Vec<String>,
+    prints   : Vec<String>,
 }
 
 impl<'a> VM {
     pub fn new(chunk: Chunk) -> Self {
-        Self { chunk, ip: 0, stack: vec![], prints: vec![] }
+        Self {
+            chunk, 
+            ip: 0, 
+            stack: vec![], 
+            globals: HashMap::new(),
+            prints: vec![],
+        }
     }
 
 
@@ -25,11 +34,9 @@ impl<'a> VM {
 
     fn run(&mut self) -> InterpretResult<Vec<String>> {
         loop {
-            if cfg!(debug_assertions) {
-                // print!("{self}");
-            }
 
             if self.ip >= self.chunk.code.len() {
+                assert!(self.stack.is_empty());
                 return InterpretResult::Ok(self.prints.clone());
             }
             
@@ -138,11 +145,40 @@ impl<'a> VM {
                     let a = self.stack.pop().unwrap();
                     self.stack.push(Value::Bool(a != b))
                 }
+                OP_POP => {
+                    self.stack.pop();
+                }
+                OP_DEFINE_GLOBAL => {
+                    let name = self.read_constant();
+                    let value = self.stack.pop().unwrap();
+                    self.globals.insert(name.to_string(), value);
+                    
+                }    
+                OP_GET_GLOBAL => {
+                    let name = self.read_constant();
+                    let value = self.globals.get(&name.to_string());
+                    match value {
+                        Some(value) => self.stack.push(value.clone()),
+                        None => return InterpretResult::RuntimeError(format!("Undefined variable '{}'", name)),
+                    }
+                }
+                OP_SET_GLOBAL => {
+                    let name = self.read_constant();
+                    // setting a variable does not consume it
+                    let value = self.stack.last().unwrap();
+                    if self.globals.contains_key(name.to_string().as_str()) {
+                        self.globals.insert(name.to_string(), value.clone());
+                    } else {
+                        return InterpretResult::RuntimeError(format!("Undefined variable '{}'", name));
+                    }
+                }
+                OP_NIL => {
+                    self.stack.push(Value::Nil)
+                },
                 _ => {
-                    return InterpretResult::CompileError("Unknown opcode".to_string()); 
+                    return InterpretResult::RuntimeError("Unknown opcode".to_string()); 
                 }
             }
-
         }
     }
 

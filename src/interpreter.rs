@@ -11,10 +11,10 @@ pub fn run(string:&str) -> InterpretResult<Vec<String>> {
 
     let mut compiler = Compiler::new();
     let chunk = compiler.compile(tokens)?;
-    // println!("{}", chunk);
+    println!("{}", chunk);
     let mut vm = VM::new(Chunk::new());
     let result = vm.interpreter(chunk)?;
-    // println!("{:#?}", result);
+    println!("{:?}", result);
     InterpretResult::Ok(result)
 
 }

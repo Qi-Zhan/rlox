@@ -32,11 +32,11 @@ impl Chunk {
         print!("{:04} ", offset);
         let instruction = self.code[offset];
         match instruction {
-            OP_CONSTANT => {
+            OP_CONSTANT | OP_DEFINE_GLOBAL | OP_GET_GLOBAL | OP_SET_GLOBAL => {
                 let constant = self.code[offset + 1];
-                println!("OP_CONSTANT {:04} '{:?}'", constant, self.constants.values[constant as usize]);
+                println!("{} {:04} '{}'",opcode2string(instruction), constant, self.constants.values[constant as usize]);
                 offset + 2
-            }
+            },
             opcode if is_binary_op(opcode) => {
                 println!("{}", opcode2string(opcode));
                 offset + 1
