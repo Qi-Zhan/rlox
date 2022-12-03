@@ -1,6 +1,7 @@
 use std::process::exit;
 use std::{fs, env};
 
+use rlox::result::InterpretResult;
 use rustyline::error::ReadlineError;
 use rustyline::{Editor, Result};
 
@@ -39,7 +40,14 @@ fn repl() -> Result<()> {
 fn run_file(path:&str) {
     let content = fs::read_to_string(path)
         .expect("No such file!");
-    run(content.as_str());
+    let res = run(content.as_str());
+    match res {
+        InterpretResult::Ok(_) => exit(0),
+        _ => {
+            println!("{:?}", res);
+            exit(64);
+        }
+    }
 }
 
 fn main(){
