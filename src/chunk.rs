@@ -32,7 +32,9 @@ impl Chunk {
         print!("{:04} ", offset);
         let instruction = self.code[offset];
         match instruction {
-            OP_CONSTANT | OP_DEFINE_GLOBAL | OP_GET_GLOBAL | OP_SET_GLOBAL => {
+            OP_CONSTANT | 
+            OP_DEFINE_GLOBAL | OP_GET_GLOBAL | OP_SET_GLOBAL |
+            OP_GET_LOCAL | OP_SET_LOCAL => {
                 let constant = self.code[offset + 1];
                 println!("{} {:04} '{}'",opcode2string(instruction), constant, self.constants.values[constant as usize]);
                 offset + 2

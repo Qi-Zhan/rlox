@@ -10,6 +10,8 @@ pub struct VM {
     chunk:      Chunk,
     ip:         usize,
     stack:      Vec<Value>,
+    // Global variables are late bound in rlox. 
+    // “Late” in this context means “resolved after compile time”
     globals:    HashMap<String, Value>,
     /// for test
     prints   : Vec<String>,
@@ -36,7 +38,7 @@ impl<'a> VM {
         loop {
 
             if self.ip >= self.chunk.code.len() {
-                assert!(self.stack.is_empty());
+                // assert!(self.stack.is_empty()); // TODO 
                 return InterpretResult::Ok(self.prints.clone());
             }
             
@@ -175,6 +177,16 @@ impl<'a> VM {
                 OP_NIL => {
                     self.stack.push(Value::Nil)
                 },
+                OP_GET_LOCAL => {
+                    let slot = self.read_byte();
+                    let value = self.stack.get(slot as usize).unwrap();
+                    self.stack.push(value.clone());
+                }
+                OP_SET_LOCAL => {
+                    let slot = self.read_byte();
+                    let value = self.stack.last().unwrap();
+                    self.stack[slot as usize] = value.clone();
+                }
                 _ => {
                     return InterpretResult::RuntimeError("Unknown opcode".to_string()); 
                 }

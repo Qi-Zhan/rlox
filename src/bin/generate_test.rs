@@ -44,12 +44,10 @@ pub fn generate_test_file(file:&str) {
 }
 
 fn generate_test_file_name(file:&str) -> String {
-    let mut test_file_path = file.replace(".lox", ".rs").replace(FILE_DIR, TEST_DIR);
+    let test_file_path = file.replace(".lox", ".rs").replace(FILE_DIR, TEST_DIR);
     let mut vec_path  = test_file_path.split(path::is_separator).collect::<Vec<&str>>();
     vec_path.remove(0);
-    test_file_path = vec_path.join("_");
-    test_file_path = "tests/".to_string() + &test_file_path;
-    test_file_path
+    "tests/".to_string() + vec_path[0].clone() + "/" + &vec_path.join("_")
 }
 
 /// extract the expected output or error from a test file content
@@ -122,6 +120,10 @@ fn generate_test_content(src_file_name: &str, src_file_content: &String, result:
 }
 
 fn save_test_file(path: &str, content: &str) {
+    let prefix = std::path::Path::new(path).parent().unwrap();
+    if !prefix.exists() {
+        fs::create_dir_all(prefix).unwrap();
+    }
     let mut file = fs::File::create(path).unwrap();
     file.write_all(content.as_bytes()).unwrap();
 }
