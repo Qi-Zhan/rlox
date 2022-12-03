@@ -143,7 +143,7 @@ fn show_all_file_paths(root:&str) -> Vec<String> {
 fn main() {
     let args = env::args().collect::<Vec<String>>();
 
-    let files = if args.len() >= 1 {
+    let files = if args.len() >= 2 {
         show_all_file_paths(FILE_DIR).into_iter().filter(|file| {
             file.contains(args[1].as_str()) && file.ends_with(".lox")
         }).collect::<Vec<String>>()
