@@ -8,6 +8,7 @@ if (true) "ok"; else fun foo() {}
 "#;
 
 #[test]
+#[ignore="function"]
 fn test_files_if_fun_in_else() {
     
     let result: InterpretResult<Vec<String>>= run(SOURCE);

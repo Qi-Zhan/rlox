@@ -187,6 +187,17 @@ impl<'a> VM {
                     let value = self.stack.last().unwrap();
                     self.stack[slot as usize] = value.clone();
                 }
+                OP_JUMP_IF_FALSE => {
+                    let offset = self.read_short();
+                    let condition = self.stack.last().unwrap();
+                    if !condition.is_truthy() {
+                        self.ip += offset;
+                    }
+                }
+                OP_JUMP => {
+                    let offset = self.read_short();
+                    self.ip += offset;
+                }
                 _ => {
                     return InterpretResult::RuntimeError("Unknown opcode".to_string()); 
                 }
@@ -203,6 +214,12 @@ impl<'a> VM {
     fn read_constant(&mut self) -> Value {
         let index = self.read_byte() as usize;
         self.chunk.constants.values[index].clone()
+    }
+
+    fn read_short(&mut self) -> usize {
+        let offset = (self.chunk.code[self.ip] as usize) << 8 | self.chunk.code[self.ip + 1] as usize;
+        self.ip += 2;
+        offset
     }
 
 

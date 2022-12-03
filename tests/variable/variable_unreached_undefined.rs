@@ -11,7 +11,6 @@ print "ok"; // expect: ok
 "#;
 
 #[test]
-#[ignore = "if"]
 fn test_files_variable_unreached_undefined() {
     let expected_output = vec!["ok".to_string()];
     let result: InterpretResult<Vec<String>>= run(SOURCE);

@@ -115,13 +115,7 @@ impl Compiler {
             },
             // if statement
             Some(Token::If) => {
-                self.consume(Token::If, tokens, "Expected 'if'")?;
-                self.consume(Token::LeftParen, tokens, "Expect '(' after 'if'.")?;
-                self.consume_expression(tokens)?;
-                self.consume(Token::RightParen, tokens, "Expect ')' after condition.")?;
-                self.consume_stmt(tokens)?;
-                self.consume(Token::Else, tokens, "Expect 'else' after 'if' block.")?;
-                self.consume_stmt(tokens)?;
+                self.consume_if(tokens)?;
             },
             // while statement
             Some(Token::While) => {
@@ -456,6 +450,37 @@ impl Compiler {
         InterpretResult::Ok(())
     }
 
+    fn consume_if(&mut self, tokens:&mut Vec<Token>) -> InterpretResult<()> {
+        // condition expression
+        // OP_JUMP_IF_FALSE --
+        // OP_POP            |
+        // then statement    |
+        // OP_JUMP           |  --
+        // OP_POP         <==|   |
+        // else statement        |
+        // continues          <==|
+        self.consume(Token::If, tokens, "Expected 'if'")?;
+
+        self.consume(Token::LeftParen, tokens, "Expect '(' after 'if'.")?;
+        self.consume_expression(tokens)?;
+        self.consume(Token::RightParen, tokens, "Expect ')' after condition.")?;
+
+        let else_jump = self.emiter.emit_jump(OP_JUMP_IF_FALSE);
+        self.emiter.emit_byte(OP_POP);
+
+        self.consume_stmt(tokens)?; // then statement
+        let end_jump = self.emiter.emit_jump(OP_JUMP);
+        self.emiter.patch_jump(else_jump);
+
+        self.emiter.emit_byte(OP_POP);
+        if tokens.last() == Some(&Token::Else) {
+            self.consume(Token::Else, tokens, "Expect 'else' after 'if' block.")?;
+            self.consume_stmt(tokens)?; // else statement
+        }
+        self.emiter.patch_jump(end_jump);
+        InterpretResult::Ok(())
+    }
+
 }
     
 
@@ -486,6 +511,19 @@ impl ByteEmiter {
 
     fn emit_return(&mut self) {
         self.emit_byte(OP_RETURN);
+    }
+
+    fn emit_jump(&mut self, instruction: u8) -> usize {
+        self.emit_byte(instruction);
+        self.emit_byte(0xff);
+        self.emit_byte(0xff);
+        self.chunk.code.len() - 2
+    }
+
+    fn patch_jump(&mut self, offset: usize) {
+        let jump = self.chunk.code.len() - offset - 2;
+        self.chunk.code[offset] = ((jump >> 8) & 0xff) as u8;
+        self.chunk.code[offset + 1] = (jump & 0xff) as u8;
     }
 
     fn emit_constant(&mut self, value: Value) {

@@ -3,7 +3,12 @@ mod ifstmt {
     mod if_class_in_else;
     mod if_class_in_then;
     mod if_else;
-    
+    mod if_dangling_else;
+    mod if_fun_in_else;
+    mod if_fun_in_then;
+    mod if_truth;
+    mod if_var_in_else;
+    mod if_var_in_then;
 
 }
 
