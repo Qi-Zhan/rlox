@@ -9,7 +9,7 @@ mod forstmt {
     mod for_statement_condition;
     mod for_statement_increment;
     mod for_statement_initializer;
-    mod for_syntax;
+    // mod for_syntax; // function
     mod for_var_in_body;
 }
 mod whilestmt {

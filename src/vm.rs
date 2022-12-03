@@ -37,6 +37,8 @@ impl<'a> VM {
     fn run(&mut self) -> InterpretResult<Vec<String>> {
         loop {
 
+            // println!("ip: {}, stack: {:?}", self.ip, self.stack);
+
             if self.ip >= self.chunk.code.len() {
                 assert!(self.stack.is_empty());
                 return InterpretResult::Ok(self.prints.clone());

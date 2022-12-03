@@ -58,33 +58,37 @@ impl Compiler {
         InterpretResult::Ok(())
     }
 
+    fn consume_var_declaration(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<()> {
+        self.consume(Token::Var, tokens, "Expected 'var' keyword")?;
+
+        if self.scope_depth == 0 { // globally
+            let global = self.consume_global_variable(tokens)?;
+            self.consume_initializer(tokens)?;
+            self.emiter.emit_bytes(OP_DEFINE_GLOBAL, global);
+        } else { // locally
+            let local = self.consume_local_variable(tokens)?;
+            self.consume_initializer(tokens)?;
+            for vars in self.locals.iter().rev() {
+                if vars.depth < self.scope_depth {
+                    break;
+                }
+                if vars.name == local {
+                    return InterpretResult::CompileError("Variable with this name already declared in this scope".to_string());
+                }
+            }
+            self.add_local(local.clone());
+            self.emiter.emit_bytes(OP_SET_LOCAL,self.resolve_local(&local).unwrap())
+        }
+
+        self.consume(Token::Semicolon, tokens, "Expected ';'")?;
+        InterpretResult::Ok(())
+    }
+
     fn consume_declaration(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<()> {
         let token = tokens.last();
         match token {
             Some(Token::Var) => {
-                self.consume(Token::Var, tokens, "Expected 'var' keyword")?;
-
-                if self.scope_depth == 0 { // globally
-                    let global = self.consume_global_variable(tokens)?;
-                    self.consume_initializer(tokens)?;
-                    self.emiter.emit_bytes(OP_DEFINE_GLOBAL, global);
-                } else { // locally
-                    let local = self.consume_local_variable(tokens)?;
-                    self.consume_initializer(tokens)?;
-                    for vars in self.locals.iter().rev() {
-                        if vars.depth < self.scope_depth {
-                            break;
-                        }
-                        if vars.name == local {
-                            return InterpretResult::CompileError("Variable with this name already declared in this scope".to_string());
-                        }
-                    }
-                    self.add_local(local.clone());
-                    self.emiter.emit_bytes(OP_SET_LOCAL,self.resolve_local(&local).unwrap())
-                }
-
-                self.consume(Token::Semicolon, tokens, "Expected ';'")?;
-                InterpretResult::Ok(())
+                self.consume_var_declaration(tokens)
             },
             Some(Token::Class) => {
                 InterpretResult::Ok(())
@@ -107,45 +111,42 @@ impl Compiler {
                 self.consume(Token::Print, tokens, "Expected 'print'")?;
                 self.consume_expression(tokens)?;
                 self.emiter.emit_byte(OP_PRINT);
-                self.consume(Token::Semicolon, tokens, "Expect ';' after expression.")?;
+                self.consume(Token::Semicolon, tokens, "Expect ';' after expression.")
             }
             // block statement
             Some(Token::LeftBrace) => {
-                self.consume_block(tokens)?;
+                self.consume_block(tokens)
             }
             // if statement
             Some(Token::If) => {
-                self.consume_if(tokens)?;
+                self.consume_if(tokens)
             }
             // while statement
             Some(Token::While) => {
-                self.consume_while(tokens)?;
+                self.consume_while(tokens)
             }
             // return statment
             Some(Token::Return) => {
                 self.consume(Token::Return, tokens, "Expected 'return'")?;
                 self.consume_expression(tokens)?;
-                self.consume(Token::Semicolon, tokens, "Expect ';' after return expression.")?;
                 self.emiter.emit_return();
+                self.consume(Token::Semicolon, tokens, "Expect ';' after return expression.")
             }
             // for statment
-            Some(Token::For) => { // TODO
-                self.consume(Token::For, tokens, "Expected 'for'")?;
-                self.consume(Token::LeftParen, tokens, "Expect '(' after 'for'.")?;
-                self.consume_declaration(tokens)?;
-                self.consume_expression(tokens)?;
-                self.consume(Token::Semicolon, tokens, "Expect ';' after loop condition.")?;
-                self.consume_expression(tokens)?;
-                self.consume(Token::RightParen, tokens, "Expect ')' after for clauses.")?;
-                self.consume_stmt(tokens)?;
+            Some(Token::For) => { 
+                self.consume_for(tokens)
             }
             // expression statement
             _ => { 
-                self.consume_expression(tokens)?;
-                self.consume(Token::Semicolon, tokens, "Expect ';' after value.")?;
-                self.emiter.emit_byte(OP_POP);
+                self.consume_exprstmt(tokens)
             },
         }
+    }
+
+    fn consume_exprstmt(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<()> {
+        self.consume_expression(tokens)?;
+        self.consume(Token::Semicolon, tokens, "Expect ';' after value.")?;
+        self.emiter.emit_byte(OP_POP);
         InterpretResult::Ok(())
     }
 
@@ -418,22 +419,22 @@ impl Compiler {
     }
 
     fn consume_block(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<()> {
-        self.begin_scope(tokens)?;
+        self.begin_scope()?;
+        self.consume(Token::LeftBrace, tokens, "Expected '{'")?;
         while tokens.last() != Some(&Token::RightBrace) {
             self.consume_declaration(tokens)?;
         }
-        self.end_scope(tokens)?;
+        self.consume(Token::RightBrace, tokens, "Expected '}'")?;
+        self.end_scope()?;
         InterpretResult::Ok(())
     }
 
-    fn begin_scope(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<()> {
-        self.consume(Token::LeftBrace, tokens, "Expected '{'")?;
+    fn begin_scope(&mut self) -> InterpretResult<()> {
         self.scope_depth += 1;
         InterpretResult::Ok(())
     }
 
-    fn end_scope(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<()> {
-        self.consume(Token::RightBrace, tokens, "Expected '}'")?;
+    fn end_scope(&mut self) -> InterpretResult<()> {
         self.scope_depth -= 1;
         while let Some(local) = self.locals.last() {
             if local.depth > self.scope_depth {
@@ -501,6 +502,56 @@ impl Compiler {
 
         self.emiter.patch_jump(exit_jump);
         self.emiter.emit_byte(OP_POP);
+        InterpretResult::Ok(())
+    }
+
+    fn consume_for(&mut self, tokens:&mut Vec<Token>) -> InterpretResult<()> {        
+
+        self.consume(Token::For, tokens, "Expected 'for'")?;
+        self.begin_scope()?;
+
+        self.consume(Token::LeftParen, tokens, "Expect '(' after 'for'.")?;
+        match tokens.last() {
+            Some(Token::Var) => {
+                self.consume_declaration(tokens)?;
+            }
+            Some(Token::Semicolon) => {
+                self.consume(Token::Semicolon, tokens, "Expect ';' after 'for' init expression.")?;
+            }
+            _ => {
+                self.consume_exprstmt(tokens)?;
+            }
+        }
+
+        let mut loop_start = self.emiter.chunk.code.len();
+        let mut exit_jump:Option<usize> = None;
+        if tokens.last() != Some(&Token::Semicolon) {
+            self.consume_expression(tokens)?;
+            exit_jump = Some(self.emiter.emit_jump(OP_JUMP_IF_FALSE));
+            self.emiter.emit_byte(OP_POP);
+        }
+        self.consume(Token::Semicolon, tokens, "Expect ';' after condition.")?;
+
+        if tokens.last() != Some(&Token::RightParen) {
+            let body_jump = self.emiter.emit_jump(OP_JUMP);
+            let increment_start = self.emiter.chunk.code.len();
+            self.consume_expression(tokens)?;
+            self.emiter.emit_byte(OP_POP);
+            self.consume(Token::RightParen, tokens, "Expect ')' after for clauses.")?;
+            
+            self.emiter.emit_loop(loop_start);
+            loop_start = increment_start;
+            self.emiter.patch_jump(body_jump);
+        }
+
+        self.consume_stmt(tokens)?; // body statement
+        self.emiter.emit_loop(loop_start);
+
+        if let Some(exit_jump) = exit_jump {
+            self.emiter.patch_jump(exit_jump);
+            self.emiter.emit_byte(OP_POP);
+        }
+        self.end_scope()?;
         InterpretResult::Ok(())
     }
 
@@ -573,7 +624,6 @@ impl ByteEmiter {
 
 
 }
-
 #[derive(Debug)]
 struct Local {
     name: String,
