@@ -15,6 +15,7 @@ print f();
 "#;
 
 #[test]
+#[ignore="function"]
 fn test_files_while_return_inside() {
     let expected_output = vec!["i".to_string()];
     let result: InterpretResult<Vec<String>>= run(SOURCE);

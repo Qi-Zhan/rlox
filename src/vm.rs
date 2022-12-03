@@ -198,6 +198,10 @@ impl<'a> VM {
                     let offset = self.read_short();
                     self.ip += offset;
                 }
+                OP_LOOP => {
+                    let offset = self.read_short();
+                    self.ip -= offset;
+                }
                 _ => {
                     return InterpretResult::RuntimeError("Unknown opcode".to_string()); 
                 }

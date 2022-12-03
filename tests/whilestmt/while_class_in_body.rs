@@ -8,6 +8,7 @@ while (true) class Foo {}
 "#;
 
 #[test]
+#[ignore="class"]
 fn test_files_while_class_in_body() {
     
     let result: InterpretResult<Vec<String>>= run(SOURCE);

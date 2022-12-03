@@ -39,9 +39,9 @@ impl Chunk {
                 println!("{} {:04} '{}'",opcode2string(instruction), constant, self.constants.values[constant as usize]);
                 offset + 2
             }
-            OP_JUMP_IF_FALSE | OP_JUMP => {
+            OP_JUMP_IF_FALSE | OP_JUMP | OP_LOOP => {
                 let new_offset = (self.code[offset + 1] as usize) << 8 | self.code[offset + 2] as usize;
-                println!("{} {:04}", opcode2string(instruction), new_offset);
+                println!("{} {:04}", opcode2string(instruction), new_offset + 3);
                 offset + 3
             }
             opcode if is_binary_op(opcode) => {

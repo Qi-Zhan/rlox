@@ -1,4 +1,26 @@
 
+mod forstmt {
+    // mod for_class_in_body;
+    // mod for_closure_in_body;
+    // mod for_fun_in_body;
+    // mod for_return_closure;
+    // mod for_return_inside;
+    mod for_scope;
+    mod for_statement_condition;
+    mod for_statement_increment;
+    mod for_statement_initializer;
+    mod for_syntax;
+    mod for_var_in_body;
+}
+mod whilestmt {
+    mod while_syntax;
+    mod while_class_in_body;
+    mod while_closure_in_body;
+    mod while_fun_in_body;
+    mod while_return_closure;
+    mod while_return_inside;
+    mod while_var_in_body;
+}
 mod ifstmt {
     mod if_class_in_else;
     mod if_class_in_then;

@@ -25,6 +25,7 @@ f3(); // expect: 3
 "#;
 
 #[test]
+#[ignore="closure"]
 fn test_files_while_closure_in_body() {
     let expected_output = vec!["1".to_string(),"2".to_string(),"3".to_string()];
     let result: InterpretResult<Vec<String>>= run(SOURCE);

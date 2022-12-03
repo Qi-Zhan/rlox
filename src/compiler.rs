@@ -108,30 +108,26 @@ impl Compiler {
                 self.consume_expression(tokens)?;
                 self.emiter.emit_byte(OP_PRINT);
                 self.consume(Token::Semicolon, tokens, "Expect ';' after expression.")?;
-            },
+            }
             // block statement
             Some(Token::LeftBrace) => {
                 self.consume_block(tokens)?;
-            },
+            }
             // if statement
             Some(Token::If) => {
                 self.consume_if(tokens)?;
-            },
+            }
             // while statement
             Some(Token::While) => {
-                self.consume(Token::While, tokens, "Expected 'while'")?;
-                self.consume(Token::LeftParen, tokens, "Expect '(' after 'while'.")?;
-                self.consume_expression(tokens)?;
-                self.consume(Token::RightParen, tokens, "Expect ')' after condition.")?;
-                self.consume_stmt(tokens)?;
-            },
+                self.consume_while(tokens)?;
+            }
             // return statment
             Some(Token::Return) => {
                 self.consume(Token::Return, tokens, "Expected 'return'")?;
                 self.consume_expression(tokens)?;
                 self.consume(Token::Semicolon, tokens, "Expect ';' after return expression.")?;
                 self.emiter.emit_return();
-            },
+            }
             // for statment
             Some(Token::For) => { // TODO
                 self.consume(Token::For, tokens, "Expected 'for'")?;
@@ -142,7 +138,7 @@ impl Compiler {
                 self.consume_expression(tokens)?;
                 self.consume(Token::RightParen, tokens, "Expect ')' after for clauses.")?;
                 self.consume_stmt(tokens)?;
-            },
+            }
             // expression statement
             _ => { 
                 self.consume_expression(tokens)?;
@@ -481,6 +477,33 @@ impl Compiler {
         InterpretResult::Ok(())
     }
 
+    fn consume_while(&mut self, tokens:&mut Vec<Token>) -> InterpretResult<()> {
+        // condition expression <==
+        // OP_JUMP_IF_FALSE --    |
+        // OP_POP            |    |
+        // body statement    |    |
+        // OP_LOOP           |  ---
+        // OP_POP         <==|   
+        // continues          
+
+        let loop_start = self.emiter.chunk.code.len();
+        self.consume(Token::While, tokens, "Expected 'while'")?;
+
+        self.consume(Token::LeftParen, tokens, "Expect '(' after 'while'.")?;
+        self.consume_expression(tokens)?;
+        self.consume(Token::RightParen, tokens, "Expect ')' after condition.")?;
+
+        let exit_jump = self.emiter.emit_jump(OP_JUMP_IF_FALSE);
+        self.emiter.emit_byte(OP_POP);
+
+        self.consume_stmt(tokens)?; // body statement
+        self.emiter.emit_loop(loop_start);
+
+        self.emiter.patch_jump(exit_jump);
+        self.emiter.emit_byte(OP_POP);
+        InterpretResult::Ok(())
+    }
+
 }
     
 
@@ -518,6 +541,13 @@ impl ByteEmiter {
         self.emit_byte(0xff);
         self.emit_byte(0xff);
         self.chunk.code.len() - 2
+    }
+
+    fn emit_loop(&mut self, loop_start: usize) {
+        self.emit_byte(OP_LOOP);
+        let offset = self.chunk.code.len() - loop_start + 2;
+        self.emit_byte((offset >> 8) as u8);
+        self.emit_byte((offset & 0xff) as u8);
     }
 
     fn patch_jump(&mut self, offset: usize) {
