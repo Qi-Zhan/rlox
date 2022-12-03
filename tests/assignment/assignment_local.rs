@@ -16,7 +16,6 @@ const SOURCE: &str = r#"
 "#;
 
 #[test]
-#[ignore = "block"]
 fn test_files_assignment_local() {
     let expected_output = vec!["before".to_string(),"after".to_string(),"arg".to_string(),"arg".to_string()];
     let result: InterpretResult<Vec<String>>= run(SOURCE);

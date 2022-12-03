@@ -14,6 +14,13 @@ pub fn tokenize(input: &str) -> impl Iterator<Item = Token> + '_ {
     })
 }
 
+pub fn is_logical_token(token: &Token) -> bool {
+    match token {
+        Token::And | Token::Or => true,
+        _ => false,
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     // Single-character tokens.

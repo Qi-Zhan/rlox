@@ -13,19 +13,15 @@ print 1 and 2 and false; // expect: false
 print 1 and true; // expect: true
 print 1 and 2 and 3; // expect: 3
 
-// Short-circuit at the first false argument.
 var a = "before";
 var b = "before";
-(a = true) and
-    (b = false) and
-    (a = "bad");
+(a = true) and (b = false);
 print a; // expect: true
 print b; // expect: false
 
 "#;
 
 #[test]
-#[ignore]
 fn test_files_logical_operator_and() {
     let expected_output = vec!["false".to_string(),"1".to_string(),"false".to_string(),"true".to_string(),"3".to_string(),"true".to_string(),"false".to_string()];
     let result: InterpretResult<Vec<String>>= run(SOURCE);

@@ -3,12 +3,13 @@ use rlox::result::InterpretResult;
 
 const SOURCE: &str = r#"
 // [line 2] Error at 'class': Expect expression.
-if (true) "ok"; else class Foo {}
+if (true) class Foo {}
 
 "#;
 
 #[test]
-fn test_files_if_class_in_else() {
+#[ignore = "class"]
+fn test_files_if_class_in_then() {
     
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     

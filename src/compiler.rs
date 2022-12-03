@@ -168,13 +168,8 @@ impl Compiler {
         if tokens.len() < 2 {
             return false;
         }
-        for token in tokens.iter().rev(){
-            if *token == Token::Equal {
-                return true;
-            }
-            if *token == Token::Semicolon {
-                return false;
-            }
+        if matches!(tokens[tokens.len()-1], Token::Identifier{..}) && tokens[tokens.len()-2] == Token::Equal {
+            return true;
         }
         false
     }
@@ -406,7 +401,7 @@ impl Compiler {
                 let id = self.emiter.make_string(id);
                 InterpretResult::Ok(id)
             }
-            _ => InterpretResult::CompileError("Expect variable name.".to_string()),
+            _ => InterpretResult::CompileError("Expect  variable name.".to_string()),
         }
     }
 

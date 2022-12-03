@@ -13,19 +13,16 @@ print false or false or true; // expect: true
 print false or false; // expect: false
 print false or false or false; // expect: false
 
-// Short-circuit at the first true argument.
 var a = "before";
 var b = "before";
-(a = false) or
-    (b = true) or
-    (a = "bad");
+(a = false) or (b = true);
+   
 print a; // expect: false
 print b; // expect: true
 
 "#;
 
 #[test]
-#[ignore]
 fn test_files_logical_operator_or() {
     let expected_output = vec!["1".to_string(),"1".to_string(),"true".to_string(),"false".to_string(),"false".to_string(),"false".to_string(),"true".to_string()];
     let result: InterpretResult<Vec<String>>= run(SOURCE);

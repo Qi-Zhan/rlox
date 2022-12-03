@@ -1,4 +1,12 @@
 
+mod ifstmt {
+    mod if_class_in_else;
+    mod if_class_in_then;
+    mod if_else;
+    
+
+}
+
 mod variable {
     mod variable_redeclare_global;
     mod variable_undefined_global;
