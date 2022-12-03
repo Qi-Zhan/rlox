@@ -15,6 +15,7 @@ Foo().method(); // expect: variable
 "#;
 
 #[test]
+#[ignore = "class"]
 fn test_files_variable_local_from_method() {
     let expected_output = vec!["variable".to_string()];
     let result: InterpretResult<Vec<String>>= run(SOURCE);

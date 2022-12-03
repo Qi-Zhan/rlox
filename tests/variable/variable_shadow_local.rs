@@ -7,6 +7,8 @@ const SOURCE: &str = r#"
   {
     var a = "shadow";
     print a; // expect: shadow
+    a = "hehe";
+    print a; // expect: hehe
   }
   print a; // expect: local
 }
@@ -15,7 +17,11 @@ const SOURCE: &str = r#"
 
 #[test]
 fn test_files_variable_shadow_local() {
-    let expected_output = vec!["shadow".to_string(),"local".to_string()];
+    let expected_output = vec![
+      "shadow".to_string(),
+      "hehe".to_string(),
+      "local".to_string(),
+      ];
     let result: InterpretResult<Vec<String>>= run(SOURCE);
     
     assert_eq!(result, InterpretResult::Ok(expected_output));

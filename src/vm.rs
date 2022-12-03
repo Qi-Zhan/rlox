@@ -38,7 +38,7 @@ impl<'a> VM {
         loop {
 
             if self.ip >= self.chunk.code.len() {
-                // assert!(self.stack.is_empty()); // TODO 
+                assert!(self.stack.is_empty());
                 return InterpretResult::Ok(self.prints.clone());
             }
             
@@ -176,7 +176,7 @@ impl<'a> VM {
                 }
                 OP_NIL => {
                     self.stack.push(Value::Nil)
-                },
+                }
                 OP_GET_LOCAL => {
                     let slot = self.read_byte();
                     let value = self.stack.get(slot as usize).unwrap();

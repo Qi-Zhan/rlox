@@ -1,8 +1,26 @@
+
 mod variable {
     mod variable_redeclare_global;
     mod variable_undefined_global;
     mod variable_use_nil_as_var;
     mod variable_use_this_as_var;
+    mod variable_duplicate_local;
+    mod variable_in_middle_of_block;
+    mod variable_in_nested_block;
+    mod variable_scope_reuse_in_different_blocks;
+    mod variable_shadow_and_local;
+    mod variable_shadow_global;
+    mod variable_shadow_local;
+    mod variable_undefined_local;
+    mod variable_uninitialized;
+    mod variable_use_false_as_var;
+    mod variable_use_global_in_initializer;
+    mod variable_collide_with_parameter;
+    mod variable_duplicate_parameter;
+    mod variable_early_bound;
+    mod variable_local_from_method;
+    mod variable_redefine_global;
+    mod variable_unreached_undefined;
 }
 
 mod block {

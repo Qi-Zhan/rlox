@@ -79,6 +79,8 @@ impl Compiler {
                             return InterpretResult::CompileError("Variable with this name already declared in this scope".to_string());
                         }
                     }
+                    self.add_local(local.clone());
+                    self.emiter.emit_bytes(OP_SET_LOCAL,self.resolve_local(&local).unwrap())
                 }
 
                 self.consume(Token::Semicolon, tokens, "Expected ';'")?;
@@ -179,10 +181,20 @@ impl Compiler {
 
     fn consume_assignment(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<()> {
         if self.is_assignment(tokens) { // assignment
-            let global = self.consume_global_variable(tokens)?;
-            self.consume(Token::Equal, tokens, "Expected '='")?;
-            self.consume_assignment(tokens)?;
-            self.emiter.emit_bytes(OP_SET_GLOBAL, global);
+            let name = self.consume_local_variable(tokens)?;
+            match self.resolve_local(&name) {
+                Some(index) => {
+                    self.consume(Token::Equal, tokens, "Expected '='")?;
+                    self.consume_assignment(tokens)?;
+                    self.emiter.emit_bytes(OP_SET_LOCAL, index);
+                },
+                None => {
+                    self.consume(Token::Equal, tokens, "Expected '='")?;
+                    self.consume_assignment(tokens)?;
+                    let global = self.emiter.make_string(name);
+                    self.emiter.emit_bytes(OP_SET_GLOBAL, global);
+                }
+            }
         } else {
             self.consume_or(tokens)?;
         }
@@ -370,7 +382,14 @@ impl Compiler {
                 self.consume(Token::RightParen, tokens, "Expect ')' after expression.")?;
                 InterpretResult::Ok(())
             }
-            Some(Token::Identifier(id)) => {
+            Some(Token::Identifier(id)) => { // get variable
+                if self.scope_depth > 0 {
+                    if let Some(index) = self.resolve_local(&id) {
+                        self.emiter.emit_byte(OP_GET_LOCAL);
+                        self.emiter.emit_byte(index);
+                        return InterpretResult::Ok(());
+                    }
+                }
                 let id = self.emiter.make_constant(Value::Obj(Obj::Str(id)));
                 self.emiter.emit_byte(OP_GET_GLOBAL);
                 self.emiter.emit_byte(id);
@@ -381,11 +400,10 @@ impl Compiler {
 
     }
 
-    /// define a variable, locally or globally
     fn consume_global_variable(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<u8> {
         match tokens.pop() {
             Some(Token::Identifier(id)) => {
-                let id = self.emiter.make_constant(Value::Obj(Obj::Str(id)));
+                let id = self.emiter.make_string(id);
                 InterpretResult::Ok(id)
             }
             _ => InterpretResult::CompileError("Expect variable name.".to_string()),
@@ -403,6 +421,15 @@ impl Compiler {
 
     fn add_local(&mut self, name: String) {
         self.locals.push(Local::new(name, self.scope_depth));
+    }
+
+    fn resolve_local(&self, name: &str) -> Option<u8> {
+        for (i, local) in self.locals.iter().enumerate().rev() {
+            if local.name == name {
+                return Some(i as u8);
+            }
+        }
+        None
     }
 
     fn consume_block(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<()> {
@@ -469,6 +496,11 @@ impl ByteEmiter {
     fn emit_constant(&mut self, value: Value) {
         let constant = self.chunk.add_constant(value);
         self.emit_bytes(OP_CONSTANT, constant as u8);
+    }
+
+    fn make_string(&mut self, value: String) -> u8 {
+        let constant = self.chunk.add_constant(Value::Obj(Obj::Str(value)));
+        constant as u8
     }
 
     fn make_constant(&mut self, value: Value) -> u8 {
