@@ -5,7 +5,7 @@ use std::fmt::Display;
 use crate::value::{ValueArray, Value};
 use crate::opcode::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Chunk {
     pub code:       Vec<u8>,
     pub constants:  ValueArray,

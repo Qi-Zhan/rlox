@@ -347,8 +347,7 @@ impl Compiler {
                 InterpretResult::Ok(())
             }
             Some(Token::String(value)) => {
-                let obj = Obj::Str(value);
-                self.emiter.emit_constant(Value::Obj(obj));
+                self.emiter.emit_constant(Value::String(value));
                 InterpretResult::Ok(())
             }
             Some(Token::True) => {
@@ -376,7 +375,7 @@ impl Compiler {
                         return InterpretResult::Ok(());
                     }
                 }
-                let id = self.emiter.make_constant(Value::Obj(Obj::Str(id)));
+                let id = self.emiter.make_constant(Value::String(id));
                 self.emiter.emit_byte(OP_GET_GLOBAL);
                 self.emiter.emit_byte(id);
                 InterpretResult::Ok(())      
@@ -613,7 +612,7 @@ impl ByteEmiter {
     }
 
     fn make_string(&mut self, value: String) -> u8 {
-        let constant = self.chunk.add_constant(Value::Obj(Obj::Str(value)));
+        let constant = self.chunk.add_constant(Value::String(value));
         constant as u8
     }
 

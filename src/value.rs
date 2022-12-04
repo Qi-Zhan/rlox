@@ -2,29 +2,32 @@
 
 use std::{ops::*, fmt::{Display, Formatter}, cmp::Ordering};
 
-use crate::result::InterpretResult;
+use crate::{result::InterpretResult, chunk::Chunk};
 
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     Number(f64),
-    Obj(Obj),
     Bool(bool),
     Nil,
-}
-    
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Obj {
-    Str(String),
-    Function,
-    Native,
-    Array,
-    Hash,
-    Class,
-    Instance,
+    String(String),
+    Function(Function),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
+pub struct  Function {
+    name:   String,
+    arity:  usize,
+    chunk:  Chunk,
+}
+
+impl Function {
+    pub fn new(name: String, arity: usize, chunk: Chunk) -> Self {
+        Self { name, arity, chunk }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct ValueArray {
     pub values: Vec<Value>,
 }
@@ -64,7 +67,7 @@ impl Add for Value {
     fn add(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
             (Value::Number(a), Value::Number(b)) => InterpretResult::Ok(Value::Number(a + b)),
-            (Value::Obj(Obj::Str(a)), Value::Obj(Obj::Str(b))) => InterpretResult::Ok(Value::Obj(Obj::Str(a + &b))),
+            (Value::String(a), Value::String(b)) => InterpretResult::Ok(Value::String(a + &b)),
             _ => InterpretResult::RuntimeError("Operands must be two numbers or two strings.".to_string()),
         }
     }
@@ -123,8 +126,6 @@ impl PartialOrd for Value {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         match (self, other) {
             (Value::Number(a), Value::Number(b)) => a.partial_cmp(b),
-            (Value::Obj(Obj::Str(a)), Value::Obj(Obj::Str(b))) => a.partial_cmp(b),
-
             _ => None,
         }
     }
@@ -193,10 +194,10 @@ impl Display for Value {
                     write!(f, "{}", number)
                 }
             }
-            Value::Obj(Obj::Str(s)) => write!(f, "{}", s),
-            Value::Obj(obj) => write!(f, "{:?}", obj),
+            Value::String(string) => write!(f, "{}", string),
             Value::Bool(boolean) => write!(f, "{}", boolean),
             Value::Nil => write!(f, "nil"), 
+            Value::Function(function) => write!(f, "<fn {}>", function.name),
         }
     }
 }
