@@ -10,7 +10,6 @@ fun foo(arg,
 "#;
 
 #[test]
-#[ignore = "function"]
 fn test_files_variable_duplicate_parameter() {
     
     let result: InterpretResult<Vec<String>>= run(SOURCE);

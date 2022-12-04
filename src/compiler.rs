@@ -1,3 +1,5 @@
+use std::vec;
+
 use crate::scanner::Token;
 use crate::result::InterpretResult;
 use crate::value::*;
@@ -15,19 +17,21 @@ pub struct Compiler {
 }
 
 impl Compiler {
-    pub fn new() -> Self {
+    pub fn new(name: String, type_: FunctionType) -> Self {
         Self { 
             locals: vec![],
             scope_depth: 0,
-            function: Function::new("".to_string(), 0),
-            type_: FunctionType::Script,
+            function: Function::new(name,0),
+            type_,
         }
     }
 
-    pub fn compile(&mut self, tokens: impl Iterator<Item = Token>) -> InterpretResult<Function> {
-        let mut tokens: Vec<Token> = tokens.collect();
+    pub fn compile(&mut self, tokens: Vec<Token>) -> InterpretResult<Function> {
+        let mut tokens = tokens;
         tokens.reverse();
         self.consume_program(&mut tokens)?;
+        // main function always returns nil
+        self.function.emit_bytes(OP_NIL, OP_RETURN); 
         InterpretResult::Ok(self.function.clone())
 
     }
@@ -67,7 +71,7 @@ impl Compiler {
             self.consume_initializer(tokens)?;
             self.function.emit_bytes(OP_DEFINE_GLOBAL, global);
         } else { // locally
-            let local = self.consume_local_variable(tokens)?;
+            let local = self.consume_identifier(tokens)?;
             self.consume_initializer(tokens)?;
             for vars in self.locals.iter().rev() {
                 if vars.depth < self.scope_depth {
@@ -95,13 +99,68 @@ impl Compiler {
                 InterpretResult::Ok(())
             },
             Some(Token::Fun) => {
-                InterpretResult::Ok(())
+                self.consume_function_declaration(tokens, FunctionType::Function)
             },
             _ => { // statement
                 self.consume_stmt(tokens)?;
                 InterpretResult::Ok(())
             }
         }
+    }
+
+    fn consume_function_declaration(&mut self, tokens: &mut Vec<Token>, type_: FunctionType) -> InterpretResult<()> {
+        self.consume(Token::Fun, tokens, "Expected 'fun' keyword")?;
+        let name = self.consume_identifier(tokens)?;
+        self.consume_function(tokens, name.clone(), type_)?;
+        if self.scope_depth == 0 {
+            let global = self.function.make_string(name);
+            self.function.emit_bytes(OP_DEFINE_GLOBAL, global);
+            // self.function.emit_bytes(OP_DEFINE_GLOBAL, global);
+        } else {
+            self.add_local(name.clone());
+            self.function.emit_bytes(OP_SET_LOCAL, self.resolve_local(&name).unwrap());
+        }
+        
+        InterpretResult::Ok(())
+    }
+
+    fn consume_function(&mut self, tokens: &mut Vec<Token>, name: String, type_: FunctionType) -> InterpretResult<()> {
+        let mut compiler = Compiler::new(name.clone(), type_);
+        compiler.begin_scope();
+        compiler.add_local(name.clone());
+        compiler.consume(Token::LeftParen, tokens, "Expected '('")?;
+        let mut arity:u32 = 0;
+        let mut paras = vec![];
+        if tokens.last() != Some(&Token::RightParen) {
+            loop {
+                let local = compiler.consume_identifier(tokens)?;
+                if paras.contains(&local) {
+                    return InterpretResult::CompileError("Duplicated parameter name".to_string());
+                } else {
+                    paras.push(local.clone());
+                }
+                compiler.add_local(local);
+                arity += 1;
+                if arity > 255 {
+                    return InterpretResult::CompileError("Cannot have more than 255 parameters".to_string());
+                }
+                if tokens.last() == Some(&Token::Comma) {
+                    compiler.consume(Token::Comma, tokens, "Expected ','")?;
+                } else {
+                    break;
+                }
+            }
+        }
+        compiler.function.arity = arity as u8;
+        compiler.consume(Token::RightParen, tokens, "Expected ')'")?;
+        compiler.consume_block(tokens)?;
+        // implicit return
+        compiler.function.emit_bytes(OP_NIL, OP_RETURN); 
+        println!("function:\n{}", compiler.function.chunk);
+        let function = compiler.function;
+        let index = self.function.make_constant(Value::Function(function));
+        self.function.emit_bytes(OP_CONSTANT, index);
+        InterpretResult::Ok(())
     }
 
     fn consume_stmt(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<()> {
@@ -128,8 +187,15 @@ impl Compiler {
             }
             // return statment
             Some(Token::Return) => {
+                if self.type_ == FunctionType::Script {
+                    return InterpretResult::CompileError("Can't return from top-level code.".to_string());
+                }
                 self.consume(Token::Return, tokens, "Expected 'return'")?;
-                self.consume_expression(tokens)?;
+                if tokens.last() == Some(&Token::Semicolon) {
+                    self.function.emit_byte(OP_NIL);
+                } else {
+                    self.consume_expression(tokens)?;
+                }
                 self.function.emit_return();
                 self.consume(Token::Semicolon, tokens, "Expect ';' after return expression.")
             }
@@ -168,7 +234,7 @@ impl Compiler {
 
     fn consume_assignment(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<()> {
         if self.is_assignment(tokens) { // assignment
-            let name = self.consume_local_variable(tokens)?;
+            let name = self.consume_identifier(tokens)?;
             match self.resolve_local(&name) {
                 Some(index) => {
                     self.consume(Token::Equal, tokens, "Expected '='")?;
@@ -334,7 +400,7 @@ impl Compiler {
                 self.function.emit_byte(OP_NOT);
             }
             Some(_) => {
-                self.consume_primary(tokens)?
+                self.consume_call(tokens)?
             }
             None => return InterpretResult::CompileError("Expected expression".to_string()),
         }
@@ -392,11 +458,11 @@ impl Compiler {
                 let id = self.function.make_string(id);
                 InterpretResult::Ok(id)
             }
-            _ => InterpretResult::CompileError("Expect  variable name.".to_string()),
+            _ => InterpretResult::CompileError("Expect variable name.".to_string()),
         }
     }
 
-    fn consume_local_variable(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<String> {
+    fn consume_identifier(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<String> {
         match tokens.pop() {
             Some(Token::Identifier(id)) => {
                 InterpretResult::Ok(id)
@@ -542,6 +608,8 @@ impl Compiler {
             self.function.emit_loop(loop_start);
             loop_start = increment_start;
             self.function.patch_jump(body_jump);
+        } else {
+            self.consume(Token::RightParen, tokens, "Expect ')' after for clauses.")?;
         }
 
         self.consume_stmt(tokens)?; // body statement
@@ -552,6 +620,36 @@ impl Compiler {
             self.function.emit_byte(OP_POP);
         }
         self.end_scope()?;
+        InterpretResult::Ok(())
+    }
+
+    fn consume_argument_list(&mut self, tokens:&mut Vec<Token>) -> InterpretResult<u8> {
+        let mut arg_count = 0;
+        if tokens.last() != Some(&Token::RightParen) {
+            loop {
+                self.consume_expression(tokens)?;
+                if arg_count == 255 {
+                    return InterpretResult::CompileError("Cannot have more than 255 arguments.".to_string());
+                }
+                arg_count += 1;
+                if tokens.last() != Some(&Token::Comma) {
+                    break;
+                }
+                self.consume(Token::Comma, tokens, "Expect ',' after argument.")?;
+            }
+        }
+        self.consume(Token::RightParen, tokens, "Expect ')' after arguments.")?;
+        InterpretResult::Ok(arg_count as u8)  
+    }
+
+    fn consume_call(&mut self, tokens:&mut Vec<Token>) -> InterpretResult<()> {
+        self.consume_primary(tokens)?;
+        if let Some(Token::LeftParen) = tokens.last() {
+            self.consume(Token::LeftParen, tokens, "Expect '(' after function name.")?;
+            let arg_count = self.consume_argument_list(tokens)?;
+            self.function.emit_byte(OP_CALL);
+            self.function.emit_byte(arg_count);
+        }
         InterpretResult::Ok(())
     }
 

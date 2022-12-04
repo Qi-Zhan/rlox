@@ -1,15 +1,30 @@
 
+mod function {
+    mod function_body_must_be_block;
+    mod function_empty_body;
+    mod function_extra_arguments;
+    mod function_local_mutual_recursion;
+    mod function_local_recursion;
+    mod function_missing_arguments;
+    mod function_missing_comma_in_parameters;
+    mod function_mutual_recursion;
+    mod function_parameters;
+    mod function_print;
+    mod function_recursion;
+    mod function_too_many_arguments;
+    mod function_too_many_parameters;
+}
 mod forstmt {
     mod for_class_in_body;
     // mod for_closure_in_body;
-    // mod for_fun_in_body;
+    mod for_fun_in_body;
     // mod for_return_closure;
-    // mod for_return_inside;
+    mod for_return_inside;
     mod for_scope;
     mod for_statement_condition;
     mod for_statement_increment;
     mod for_statement_initializer;
-    // mod for_syntax; // function
+    mod for_syntax; 
     mod for_var_in_body;
 }
 mod whilestmt {
@@ -50,7 +65,6 @@ mod variable {
     mod variable_uninitialized;
     mod variable_use_false_as_var;
     mod variable_use_global_in_initializer;
-    mod variable_collide_with_parameter;
     mod variable_duplicate_parameter;
     mod variable_early_bound;
     mod variable_local_from_method;
@@ -127,4 +141,29 @@ mod operator {
     mod logical_operator_or;
     mod logical_operator_or_truth;
 
+}
+
+mod call {
+    mod call_bool;
+    mod call_nil;
+    mod call_num;
+    mod call_object;
+    mod call_string;
+}
+
+mod comments {
+    mod comments_line_at_eof;
+    mod comments_only_line_comment;
+    mod comments_only_line_comment_and_line;
+    mod comments_unicode;
+}
+
+mod returnstmt {
+    mod return_in_method;
+    mod return_return_nil_if_no_value;
+    mod return_after_else;
+    mod return_after_if;
+    mod return_after_while;
+    mod return_at_top_level;
+    mod return_in_function;
 }

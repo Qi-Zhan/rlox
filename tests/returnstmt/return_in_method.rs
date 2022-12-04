@@ -14,6 +14,7 @@ print Foo().method(); // expect: ok
 "#;
 
 #[test]
+#[ignore = "class"]
 fn test_files_return_in_method() {
     let expected_output = vec!["ok".to_string()];
     let result: InterpretResult<Vec<String>>= run(SOURCE);

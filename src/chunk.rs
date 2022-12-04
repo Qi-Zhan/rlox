@@ -32,9 +32,7 @@ impl Chunk {
         print!("{:04} ", offset);
         let instruction = self.code[offset];
         match instruction {
-            OP_CONSTANT | 
-            OP_DEFINE_GLOBAL | OP_GET_GLOBAL | OP_SET_GLOBAL |
-            OP_GET_LOCAL | OP_SET_LOCAL => {
+            OP_CONSTANT | OP_DEFINE_GLOBAL | OP_GET_GLOBAL | OP_SET_GLOBAL  => {
                 let constant = self.code[offset + 1];
                 println!("{} {:04} '{}'",opcode2string(instruction), constant, self.constants.values[constant as usize]);
                 offset + 2
@@ -44,6 +42,16 @@ impl Chunk {
                 println!("{} {:04}", opcode2string(instruction), new_offset + 3);
                 offset + 3
             }
+            OP_CALL => {
+                let arg_count = self.code[offset + 1];
+                println!("{} {}", opcode2string(instruction), arg_count);
+                offset + 2
+            }
+            OP_GET_LOCAL | OP_SET_LOCAL => {
+                let slot = self.code[offset + 1];
+                println!("{} {}", opcode2string(instruction), slot);
+                offset + 2
+            }
             opcode if is_binary_op(opcode) => {
                 println!("{}", opcode2string(opcode));
                 offset + 1
@@ -52,6 +60,7 @@ impl Chunk {
                 println!("{}", opcode2string(opcode));
                 offset + 1
             }
+
             _ => {
                 println!("Unknown opcode {}", instruction);
                 offset + 1

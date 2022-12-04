@@ -19,7 +19,6 @@ print !foo;      // expect: false
 "#;
 
 #[test]
-#[ignore = "function"]
 fn test_files_operator_not() {
     let expected_output = vec!["false".to_string(),"true".to_string(),"true".to_string(),"false".to_string(),"false".to_string(),"true".to_string(),"false".to_string(),"false".to_string()];
     let result: InterpretResult<Vec<String>>= run(SOURCE);

@@ -16,7 +16,6 @@ var a = "outer";
 "#;
 
 #[test]
-#[ignore = "function"]
 fn test_files_variable_early_bound() {
     let expected_output = vec!["outer".to_string(),"outer".to_string()];
     let result: InterpretResult<Vec<String>>= run(SOURCE);

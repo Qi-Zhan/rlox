@@ -41,7 +41,7 @@ pub fn is_binary_op(opcode: u8) -> bool {
 
 pub fn is_unary_op(opcode: u8) -> bool {
     match opcode {
-        OP_NEGATE | OP_NOT | OP_PRINT | OP_RETURN | OP_POP => true,
+        OP_NEGATE | OP_NOT | OP_PRINT | OP_RETURN | OP_POP | OP_NIL => true,
         _ => false
     }
 }

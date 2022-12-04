@@ -21,12 +21,12 @@ pub enum FunctionType {
 #[derive(Debug, Clone, PartialEq)]
 pub struct  Function {
     name:   String,
-    arity:  usize,
+    pub arity:  u8,
     pub chunk:  Chunk,
 }
 
 impl Function {
-    pub fn new(name: String, arity: usize) -> Self {
+    pub fn new(name: String, arity: u8) -> Self {
         Self { name, arity, chunk: Chunk::new() }
     }
 
@@ -229,10 +229,7 @@ impl Not for Value {
     type Output = InterpretResult<Self>;
 
     fn not(self) -> Self::Output {
-        match self {
-            Value::Bool(a) => InterpretResult::Ok(Value::Bool(!a)),
-            _ => InterpretResult::RuntimeError("Operand must be a boolean.".to_string()),
-        }
+        InterpretResult::Ok(Value::Bool(!self.is_truthy()))
     }
     
 }

@@ -7,8 +7,6 @@ use crate::opcode::*;
 #[derive(Debug)]
 pub struct VM {
     frames:         Vec<CallFrame>,
-    /// frame count
-    fc:             usize, 
     stack:          Vec<Value>,
     // Global variables are late bound in rlox. 
     // “Late” in this context means “resolved after compile time”
@@ -21,7 +19,6 @@ impl<'a> VM {
     pub fn new() -> Self {
         Self {
             frames:         vec![], 
-            fc:    0, 
             stack:          vec![], 
             globals:        HashMap::new(),
             prints:         vec![],
@@ -36,31 +33,26 @@ impl<'a> VM {
 
 
     fn run(&mut self) -> InterpretResult<Vec<String>> {
-
         loop {
-
-            // println!("ip: {}, stack: {:?}", self.ip, self.stack);
-            let frame = &mut self.frames[self.fc];
-
-            if frame.ip >= frame.function.chunk.code.len() {
-                assert!(self.stack.is_empty());
-                return InterpretResult::Ok(self.prints.clone());
-            }
+            
+            self.print_stack();
+            let frame = self.frames.last_mut().unwrap();
             
             let instruction = Self::read_byte(frame);
-            
+            println!("{}", opcode2string(instruction));
             match instruction {
                 OP_RETURN => {
-                    match self.stack.pop() {
-                        Some(value) => {
-                            self.prints.push(value.to_string());
-                            return InterpretResult::Ok(self.prints.clone());
-                        }
-                        None => return InterpretResult::RuntimeError("Stack is empty".to_string()),
+                    let result = self.stack.pop().unwrap();
+                    let last_slot = self.frames.pop().unwrap().slots;
+                    if self.frames.is_empty() {
+                        return InterpretResult::Ok(self.prints.clone());
                     }
+                    // recover the stack
+                    self.stack.truncate(last_slot);
+                    self.stack.push(result);
                 }
                 OP_CONSTANT => {
-                    let constant = self.read_constant();
+                    let constant = Self::read_constant(frame);
                     self.stack.push(constant)
                 }
                 OP_NEGATE => {
@@ -89,7 +81,7 @@ impl<'a> VM {
                 }
                 OP_PRINT => {
                     let value = self.stack.pop().unwrap();
-                    // println!("{}", value); TODO: remove this
+                    println!("{}", value);
                     self.prints.push(value.to_string());
                 }
                 OP_AND => {
@@ -156,13 +148,13 @@ impl<'a> VM {
                     self.stack.pop();
                 }
                 OP_DEFINE_GLOBAL => {
-                    let name = self.read_constant();
+                    let name = Self::read_constant(frame);
                     let value = self.stack.pop().unwrap();
                     self.globals.insert(name.to_string(), value);
                     
                 }    
                 OP_GET_GLOBAL => {
-                    let name = self.read_constant();
+                    let name = Self::read_constant(frame);
                     let value = self.globals.get(&name.to_string());
                     match value {
                         Some(value) => self.stack.push(value.clone()),
@@ -170,7 +162,7 @@ impl<'a> VM {
                     }
                 }
                 OP_SET_GLOBAL => {
-                    let name = self.read_constant();
+                    let name = Self::read_constant(frame);
                     // setting a variable does not consume it
                     let value = self.stack.last().unwrap();
                     if self.globals.contains_key(name.to_string().as_str()) {
@@ -184,13 +176,13 @@ impl<'a> VM {
                 }
                 OP_GET_LOCAL => {
                     let slot = Self::read_byte(frame);
-                    let value = self.stack.get(slot as usize).unwrap();
+                    let value = self.stack.get(frame.slots + slot as usize).unwrap();
                     self.stack.push(value.clone());
                 }
                 OP_SET_LOCAL => {
                     let slot = Self::read_byte(frame);
                     let value = self.stack.last().unwrap();
-                    self.stack[slot as usize] = value.clone();
+                    self.stack[frame.slots + slot as usize] = value.clone();
                 }
                 OP_JUMP_IF_FALSE => {
                     let offset = Self::read_short(frame);
@@ -207,11 +199,38 @@ impl<'a> VM {
                     let offset = Self::read_short(frame);
                     frame.ip -= offset;
                 }
+                OP_CALL => {
+                    let argcount = Self::read_byte(frame);
+                    let value = self.stack[self.stack.len() - argcount as usize - 1].clone();
+                    self.call_value(value, argcount)?;
+                }
                 _ => {
                     return InterpretResult::RuntimeError("Unknown opcode".to_string()); 
                 }
             }
         }
+    }
+
+    fn call_value(&mut self, callee: Value, argcount: u8) -> InterpretResult<()> {
+        match callee {
+            Value::Function(function) => {
+                if argcount != function.arity {
+                    return InterpretResult::RuntimeError(format!("Expected {} arguments but got {}", function.arity, argcount));
+                }
+                self.call(function, argcount);
+                InterpretResult::Ok(())
+            }
+            _ => InterpretResult::RuntimeError("Can only call functions and classes.".to_string()), 
+        }
+    }
+
+    fn call(&mut self, function: Function, argcount: u8) {
+        let frame = CallFrame {
+            ip: 0,
+            function,
+            slots: self.stack.len() - argcount as usize -1,
+        };
+        self.frames.push(frame);
     }
 
     fn read_byte(frame: &mut CallFrame) -> u8 {
@@ -220,8 +239,7 @@ impl<'a> VM {
         instruction
     }
 
-    fn read_constant(&mut self) -> Value {
-        let frame = &mut self.frames[self.fc];
+    fn read_constant(frame: &mut CallFrame) -> Value {
         let index = Self::read_byte(frame) as usize;
         frame.function.chunk.constants.values[index].clone()
     }
@@ -232,6 +250,12 @@ impl<'a> VM {
         offset
     }
 
+    fn print_stack(&self) {
+        for value in &self.stack {
+            print!("[ {} ]", value);
+        }
+        println!("")
+    }
 
 }
 
@@ -250,6 +274,7 @@ impl<'a> std::fmt::Display for VM {
 struct CallFrame {
     ip:         usize,
     function:   Function,
+    /// frame pointer
     slots:      usize,
 }
 

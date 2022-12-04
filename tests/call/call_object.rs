@@ -10,6 +10,7 @@ foo(); // expect runtime error: Can only call functions and classes.
 "#;
 
 #[test]
+#[ignore = "class"]
 fn test_files_call_object() {
     
     let result: InterpretResult<Vec<String>>= run(SOURCE);
