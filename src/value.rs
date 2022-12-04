@@ -1,9 +1,7 @@
-#![allow(dead_code)]
-
 use std::{ops::*, fmt::{Display, Formatter}, cmp::Ordering};
 
 use crate::{result::InterpretResult, chunk::Chunk};
-
+use crate::opcode::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
@@ -15,16 +13,71 @@ pub enum Value {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum FunctionType {
+    Function,
+    Script,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct  Function {
     name:   String,
     arity:  usize,
-    chunk:  Chunk,
+    pub chunk:  Chunk,
 }
 
 impl Function {
-    pub fn new(name: String, arity: usize, chunk: Chunk) -> Self {
-        Self { name, arity, chunk }
+    pub fn new(name: String, arity: usize) -> Self {
+        Self { name, arity, chunk: Chunk::new() }
     }
+
+    pub fn emit_byte(&mut self, byte: u8) {
+        self.chunk.write_chunk(byte);
+    }
+
+    pub fn emit_bytes(&mut self, byte1: u8, byte2: u8) {
+        self.emit_byte(byte1);
+        self.emit_byte(byte2);
+    }
+
+    pub fn emit_return(&mut self) {
+        self.emit_byte(OP_RETURN);
+    }
+
+    pub fn emit_jump(&mut self, instruction: u8) -> usize {
+        self.emit_byte(instruction);
+        self.emit_byte(0xff);
+        self.emit_byte(0xff);
+        self.chunk.code.len() - 2
+    }
+
+    pub fn emit_loop(&mut self, loop_start: usize) {
+        self.emit_byte(OP_LOOP);
+        let offset = self.chunk.code.len() - loop_start + 2;
+        self.emit_byte((offset >> 8) as u8);
+        self.emit_byte((offset & 0xff) as u8);
+    }
+
+    pub fn patch_jump(&mut self, offset: usize) {
+        let jump = self.chunk.code.len() - offset - 2;
+        self.chunk.code[offset] = ((jump >> 8) & 0xff) as u8;
+        self.chunk.code[offset + 1] = (jump & 0xff) as u8;
+    }
+
+    pub fn emit_constant(&mut self, value: Value) {
+        let constant = self.chunk.add_constant(value);
+        self.emit_bytes(OP_CONSTANT, constant as u8);
+    }
+
+    pub fn make_string(&mut self, value: String) -> u8 {
+        let constant = self.chunk.add_constant(Value::String(value));
+        constant as u8
+    }
+
+    pub fn make_constant(&mut self, value: Value) -> u8 {
+        let constant = self.chunk.add_constant(value);
+        constant as u8
+    }
+
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -197,7 +250,13 @@ impl Display for Value {
             Value::String(string) => write!(f, "{}", string),
             Value::Bool(boolean) => write!(f, "{}", boolean),
             Value::Nil => write!(f, "nil"), 
-            Value::Function(function) => write!(f, "<fn {}>", function.name),
+            Value::Function(function) => {
+                if function.name == "" {
+                    write!(f, "<script>")
+                } else {
+                    write!(f, "<fn {}>", function.name)
+                }
+            }
         }
     }
 }

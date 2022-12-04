@@ -1,50 +1,53 @@
-#![allow(dead_code)]
-
 use std::collections::HashMap;
 
-use crate::{chunk::Chunk, value::Value, result::InterpretResult};
+use crate::value::Function;
+use crate::{value::Value, result::InterpretResult};
 use crate::opcode::*;
 
 #[derive(Debug)]
 pub struct VM {
-    chunk:      Chunk,
-    ip:         usize,
-    stack:      Vec<Value>,
+    frames:         Vec<CallFrame>,
+    /// frame count
+    fc:             usize, 
+    stack:          Vec<Value>,
     // Global variables are late bound in rlox. 
     // “Late” in this context means “resolved after compile time”
     globals:    HashMap<String, Value>,
     /// for test
-    prints   : Vec<String>,
+    prints:     Vec<String>,
 }
 
 impl<'a> VM {
-    pub fn new(chunk: Chunk) -> Self {
+    pub fn new() -> Self {
         Self {
-            chunk, 
-            ip: 0, 
-            stack: vec![], 
-            globals: HashMap::new(),
-            prints: vec![],
+            frames:         vec![], 
+            fc:    0, 
+            stack:          vec![], 
+            globals:        HashMap::new(),
+            prints:         vec![],
         }
     }
 
 
-    pub fn interpreter(&mut self, chunk: Chunk) -> InterpretResult<Vec<String>> {
-        self.chunk = chunk;        
+    pub fn interpreter(&mut self, function: Function) -> InterpretResult<Vec<String>> {
+        self.frames.push(CallFrame::new(function));
         self.run()
     }
 
+
     fn run(&mut self) -> InterpretResult<Vec<String>> {
+
         loop {
 
             // println!("ip: {}, stack: {:?}", self.ip, self.stack);
+            let frame = &mut self.frames[self.fc];
 
-            if self.ip >= self.chunk.code.len() {
+            if frame.ip >= frame.function.chunk.code.len() {
                 assert!(self.stack.is_empty());
                 return InterpretResult::Ok(self.prints.clone());
             }
             
-            let instruction = self.read_byte();
+            let instruction = Self::read_byte(frame);
             
             match instruction {
                 OP_RETURN => {
@@ -180,29 +183,29 @@ impl<'a> VM {
                     self.stack.push(Value::Nil)
                 }
                 OP_GET_LOCAL => {
-                    let slot = self.read_byte();
+                    let slot = Self::read_byte(frame);
                     let value = self.stack.get(slot as usize).unwrap();
                     self.stack.push(value.clone());
                 }
                 OP_SET_LOCAL => {
-                    let slot = self.read_byte();
+                    let slot = Self::read_byte(frame);
                     let value = self.stack.last().unwrap();
                     self.stack[slot as usize] = value.clone();
                 }
                 OP_JUMP_IF_FALSE => {
-                    let offset = self.read_short();
+                    let offset = Self::read_short(frame);
                     let condition = self.stack.last().unwrap();
                     if !condition.is_truthy() {
-                        self.ip += offset;
+                        frame.ip += offset;
                     }
                 }
                 OP_JUMP => {
-                    let offset = self.read_short();
-                    self.ip += offset;
+                    let offset = Self::read_short(frame);
+                    frame.ip += offset;
                 }
                 OP_LOOP => {
-                    let offset = self.read_short();
-                    self.ip -= offset;
+                    let offset = Self::read_short(frame);
+                    frame.ip -= offset;
                 }
                 _ => {
                     return InterpretResult::RuntimeError("Unknown opcode".to_string()); 
@@ -211,20 +214,21 @@ impl<'a> VM {
         }
     }
 
-    fn read_byte(&mut self) -> u8 {
-        let instruction = self.chunk.code[self.ip];
-        self.ip += 1;
+    fn read_byte(frame: &mut CallFrame) -> u8 {
+        let instruction = frame.function.chunk.code[frame.ip];
+        frame.ip += 1;
         instruction
     }
 
     fn read_constant(&mut self) -> Value {
-        let index = self.read_byte() as usize;
-        self.chunk.constants.values[index].clone()
+        let frame = &mut self.frames[self.fc];
+        let index = Self::read_byte(frame) as usize;
+        frame.function.chunk.constants.values[index].clone()
     }
 
-    fn read_short(&mut self) -> usize {
-        let offset = (self.chunk.code[self.ip] as usize) << 8 | self.chunk.code[self.ip + 1] as usize;
-        self.ip += 2;
+    fn read_short(frame: &mut CallFrame) -> usize {
+        let offset = (frame.function.chunk.code[frame.ip] as usize) << 8 | frame.function.chunk.code[frame.ip + 1] as usize;
+        frame.ip += 2;
         offset
     }
 
@@ -241,3 +245,21 @@ impl<'a> std::fmt::Display for VM {
         writeln!(f, "")
     }
 }
+
+#[derive(Debug)]
+struct CallFrame {
+    ip:         usize,
+    function:   Function,
+    slots:      usize,
+}
+
+impl CallFrame {
+    fn new(function: Function) -> CallFrame {
+        CallFrame {
+            ip: 0,
+            function,
+            slots: 0,
+        }
+    }
+}
+

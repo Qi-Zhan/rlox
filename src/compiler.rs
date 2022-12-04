@@ -1,4 +1,3 @@
-use crate::chunk::Chunk;
 use crate::scanner::Token;
 use crate::result::InterpretResult;
 use crate::value::*;
@@ -9,8 +8,9 @@ pub struct Compiler {
 
     locals: Vec<Local>,
     scope_depth: usize,
-    // functions: Vec<Function>,
-    emiter: ByteEmiter,
+
+    function: Function,
+    type_: FunctionType,
 
 }
 
@@ -19,15 +19,16 @@ impl Compiler {
         Self { 
             locals: vec![],
             scope_depth: 0,
-            emiter: ByteEmiter::new(),
+            function: Function::new("".to_string(), 0),
+            type_: FunctionType::Script,
         }
     }
 
-    pub fn compile(&mut self, tokens: impl Iterator<Item = Token>) -> InterpretResult<Chunk> {
+    pub fn compile(&mut self, tokens: impl Iterator<Item = Token>) -> InterpretResult<Function> {
         let mut tokens: Vec<Token> = tokens.collect();
         tokens.reverse();
         self.consume_program(&mut tokens)?;
-        InterpretResult::Ok(self.emiter.return_chunk())
+        InterpretResult::Ok(self.function.clone())
 
     }
 
@@ -53,7 +54,7 @@ impl Compiler {
             self.consume(Token::Equal, tokens, "Expected '='")?;
             self.consume_expression(tokens)?;
         } else {
-            self.emiter.emit_byte(OP_NIL);
+            self.function.emit_byte(OP_NIL);
         }
         InterpretResult::Ok(())
     }
@@ -64,7 +65,7 @@ impl Compiler {
         if self.scope_depth == 0 { // globally
             let global = self.consume_global_variable(tokens)?;
             self.consume_initializer(tokens)?;
-            self.emiter.emit_bytes(OP_DEFINE_GLOBAL, global);
+            self.function.emit_bytes(OP_DEFINE_GLOBAL, global);
         } else { // locally
             let local = self.consume_local_variable(tokens)?;
             self.consume_initializer(tokens)?;
@@ -77,7 +78,7 @@ impl Compiler {
                 }
             }
             self.add_local(local.clone());
-            self.emiter.emit_bytes(OP_SET_LOCAL,self.resolve_local(&local).unwrap())
+            self.function.emit_bytes(OP_SET_LOCAL,self.resolve_local(&local).unwrap())
         }
 
         self.consume(Token::Semicolon, tokens, "Expected ';'")?;
@@ -110,7 +111,7 @@ impl Compiler {
             Some(Token::Print) => {
                 self.consume(Token::Print, tokens, "Expected 'print'")?;
                 self.consume_expression(tokens)?;
-                self.emiter.emit_byte(OP_PRINT);
+                self.function.emit_byte(OP_PRINT);
                 self.consume(Token::Semicolon, tokens, "Expect ';' after expression.")
             }
             // block statement
@@ -129,7 +130,7 @@ impl Compiler {
             Some(Token::Return) => {
                 self.consume(Token::Return, tokens, "Expected 'return'")?;
                 self.consume_expression(tokens)?;
-                self.emiter.emit_return();
+                self.function.emit_return();
                 self.consume(Token::Semicolon, tokens, "Expect ';' after return expression.")
             }
             // for statment
@@ -146,7 +147,7 @@ impl Compiler {
     fn consume_exprstmt(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<()> {
         self.consume_expression(tokens)?;
         self.consume(Token::Semicolon, tokens, "Expect ';' after value.")?;
-        self.emiter.emit_byte(OP_POP);
+        self.function.emit_byte(OP_POP);
         InterpretResult::Ok(())
     }
 
@@ -172,13 +173,13 @@ impl Compiler {
                 Some(index) => {
                     self.consume(Token::Equal, tokens, "Expected '='")?;
                     self.consume_assignment(tokens)?;
-                    self.emiter.emit_bytes(OP_SET_LOCAL, index);
+                    self.function.emit_bytes(OP_SET_LOCAL, index);
                 },
                 None => {
                     self.consume(Token::Equal, tokens, "Expected '='")?;
                     self.consume_assignment(tokens)?;
-                    let global = self.emiter.make_string(name);
-                    self.emiter.emit_bytes(OP_SET_GLOBAL, global);
+                    let global = self.function.make_string(name);
+                    self.function.emit_bytes(OP_SET_GLOBAL, global);
                 }
             }
         } else {
@@ -195,7 +196,7 @@ impl Compiler {
                 Some(Token::Or) => {
                     self.consume(Token::Or, tokens, "Expected 'or'")?;
                     self.consume_and(tokens)?;
-                    self.emiter.emit_byte(OP_OR);
+                    self.function.emit_byte(OP_OR);
                 },
                 _ => {
                     break;
@@ -213,7 +214,7 @@ impl Compiler {
                 Some(Token::And) => {
                     self.consume(Token::And, tokens, "Expected 'and'")?;
                     self.consume_equality(tokens)?;
-                    self.emiter.emit_byte(OP_AND);
+                    self.function.emit_byte(OP_AND);
                 },
                 _ => {
                     break;
@@ -231,12 +232,12 @@ impl Compiler {
                 Some(Token::BangEqual) => {
                     self.consume(Token::BangEqual, tokens, "Expected '!='")?;
                     self.consume_comparison(tokens)?;
-                    self.emiter.emit_byte(OP_NE);
+                    self.function.emit_byte(OP_NE);
                 },
                 Some(Token::EqualEqual) => {
                     self.consume(Token::EqualEqual, tokens, "Expected '=='")?;
                     self.consume_comparison(tokens)?;
-                    self.emiter.emit_byte(OP_EQUAL);
+                    self.function.emit_byte(OP_EQUAL);
                 },
                 _ => {
                     break;
@@ -254,22 +255,22 @@ impl Compiler {
                 Some(Token::Greater) => {
                     self.consume(Token::Greater, tokens, "Expected '>'")?;
                     self.consume_term(tokens)?;
-                    self.emiter.emit_byte(OP_GT);
+                    self.function.emit_byte(OP_GT);
                 },
                 Some(Token::GreaterEqual) => {
                     self.consume(Token::GreaterEqual, tokens, "Expected '>='")?;
                     self.consume_term(tokens)?;
-                    self.emiter.emit_byte(OP_GE);
+                    self.function.emit_byte(OP_GE);
                 },
                 Some(Token::Less) => {
                     self.consume(Token::Less, tokens, "Expected '<'")?;
                     self.consume_term(tokens)?;
-                    self.emiter.emit_byte(OP_LT);
+                    self.function.emit_byte(OP_LT);
                 },
                 Some(Token::LessEqual) => {
                     self.consume(Token::LessEqual, tokens, "Expected '<='")?;
                     self.consume_term(tokens)?;
-                    self.emiter.emit_byte(OP_LE);
+                    self.function.emit_byte(OP_LE);
                 },
                 _ => {
                     break;
@@ -286,12 +287,12 @@ impl Compiler {
                 Some(Token::Plus) => {
                     self.consume(Token::Plus, tokens, "Expected '+'")?;
                     self.consume_factor(tokens)?;
-                    self.emiter.emit_byte(OP_ADD);
+                    self.function.emit_byte(OP_ADD);
                 }
                 Some(Token::Minus) => {
                     self.consume(Token::Minus, tokens, "Expected '-'")?;
                     self.consume_factor(tokens)?;
-                    self.emiter.emit_byte(OP_SUBTRACT);
+                    self.function.emit_byte(OP_SUBTRACT);
                 }
                 _ => break,
             }
@@ -307,12 +308,12 @@ impl Compiler {
                 Some(Token::Star) => {
                     self.consume(Token::Star, tokens, "Expected '*'")?;
                     self.consume_unary(tokens)?;
-                    self.emiter.emit_byte(OP_MULTIPLY);
+                    self.function.emit_byte(OP_MULTIPLY);
                 }
                 Some(Token::Slash) => {
                     self.consume(Token::Slash, tokens, "Expected '/'")?;
                     self.consume_unary(tokens)?;
-                    self.emiter.emit_byte(OP_DIVIDE);
+                    self.function.emit_byte(OP_DIVIDE);
                 }
                 _ => break,
             }
@@ -325,12 +326,12 @@ impl Compiler {
             Some(Token::Minus) => {
                 self.consume(Token::Minus, tokens, "Expected '-'")?;
                 self.consume_unary(tokens)?;
-                self.emiter.emit_byte(OP_NEGATE);
+                self.function.emit_byte(OP_NEGATE);
             }
             Some(Token::Bang) => {
                 self.consume(Token::Bang, tokens, "Expected '!'")?;
                 self.consume_unary(tokens)?;
-                self.emiter.emit_byte(OP_NOT);
+                self.function.emit_byte(OP_NOT);
             }
             Some(_) => {
                 self.consume_primary(tokens)?
@@ -343,23 +344,23 @@ impl Compiler {
     fn consume_primary(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<()> {
         match tokens.pop() {
             Some(Token::Number(value)) => {
-                self.emiter.emit_constant(Value::Number(value));
+                self.function.emit_constant(Value::Number(value));
                 InterpretResult::Ok(())
             }
             Some(Token::String(value)) => {
-                self.emiter.emit_constant(Value::String(value));
+                self.function.emit_constant(Value::String(value));
                 InterpretResult::Ok(())
             }
             Some(Token::True) => {
-                self.emiter.emit_constant(Value::Bool(true));
+                self.function.emit_constant(Value::Bool(true));
                 InterpretResult::Ok(())
             }
             Some(Token::False) => {
-                self.emiter.emit_constant(Value::Bool(false));
+                self.function.emit_constant(Value::Bool(false));
                 InterpretResult::Ok(())
             }
             Some(Token::Nil) => {
-                self.emiter.emit_constant(Value::Nil);
+                self.function.emit_constant(Value::Nil);
                 InterpretResult::Ok(())
             }
             Some(Token::LeftParen) => {
@@ -370,14 +371,14 @@ impl Compiler {
             Some(Token::Identifier(id)) => { // get variable
                 if self.scope_depth > 0 {
                     if let Some(index) = self.resolve_local(&id) {
-                        self.emiter.emit_byte(OP_GET_LOCAL);
-                        self.emiter.emit_byte(index);
+                        self.function.emit_byte(OP_GET_LOCAL);
+                        self.function.emit_byte(index);
                         return InterpretResult::Ok(());
                     }
                 }
-                let id = self.emiter.make_constant(Value::String(id));
-                self.emiter.emit_byte(OP_GET_GLOBAL);
-                self.emiter.emit_byte(id);
+                let id = self.function.make_constant(Value::String(id));
+                self.function.emit_byte(OP_GET_GLOBAL);
+                self.function.emit_byte(id);
                 InterpretResult::Ok(())      
             }
             _ => InterpretResult::CompileError("Expect expression.".to_string()),
@@ -388,7 +389,7 @@ impl Compiler {
     fn consume_global_variable(&mut self, tokens: &mut Vec<Token>) -> InterpretResult<u8> {
         match tokens.pop() {
             Some(Token::Identifier(id)) => {
-                let id = self.emiter.make_string(id);
+                let id = self.function.make_string(id);
                 InterpretResult::Ok(id)
             }
             _ => InterpretResult::CompileError("Expect  variable name.".to_string()),
@@ -438,7 +439,7 @@ impl Compiler {
         while let Some(local) = self.locals.last() {
             if local.depth > self.scope_depth {
                 self.locals.pop();
-                self.emiter.emit_byte(OP_POP);
+                self.function.emit_byte(OP_POP);
             } else {
                 break;
             }
@@ -461,19 +462,19 @@ impl Compiler {
         self.consume_expression(tokens)?;
         self.consume(Token::RightParen, tokens, "Expect ')' after condition.")?;
 
-        let else_jump = self.emiter.emit_jump(OP_JUMP_IF_FALSE);
-        self.emiter.emit_byte(OP_POP);
+        let else_jump = self.function.emit_jump(OP_JUMP_IF_FALSE);
+        self.function.emit_byte(OP_POP);
 
         self.consume_stmt(tokens)?; // then statement
-        let end_jump = self.emiter.emit_jump(OP_JUMP);
-        self.emiter.patch_jump(else_jump);
+        let end_jump = self.function.emit_jump(OP_JUMP);
+        self.function.patch_jump(else_jump);
 
-        self.emiter.emit_byte(OP_POP);
+        self.function.emit_byte(OP_POP);
         if tokens.last() == Some(&Token::Else) {
             self.consume(Token::Else, tokens, "Expect 'else' after 'if' block.")?;
             self.consume_stmt(tokens)?; // else statement
         }
-        self.emiter.patch_jump(end_jump);
+        self.function.patch_jump(end_jump);
         InterpretResult::Ok(())
     }
 
@@ -486,21 +487,21 @@ impl Compiler {
         // OP_POP         <==|   
         // continues          
 
-        let loop_start = self.emiter.chunk.code.len();
+        let loop_start = self.function.chunk.code.len();
         self.consume(Token::While, tokens, "Expected 'while'")?;
 
         self.consume(Token::LeftParen, tokens, "Expect '(' after 'while'.")?;
         self.consume_expression(tokens)?;
         self.consume(Token::RightParen, tokens, "Expect ')' after condition.")?;
 
-        let exit_jump = self.emiter.emit_jump(OP_JUMP_IF_FALSE);
-        self.emiter.emit_byte(OP_POP);
+        let exit_jump = self.function.emit_jump(OP_JUMP_IF_FALSE);
+        self.function.emit_byte(OP_POP);
 
         self.consume_stmt(tokens)?; // body statement
-        self.emiter.emit_loop(loop_start);
+        self.function.emit_loop(loop_start);
 
-        self.emiter.patch_jump(exit_jump);
-        self.emiter.emit_byte(OP_POP);
+        self.function.patch_jump(exit_jump);
+        self.function.emit_byte(OP_POP);
         InterpretResult::Ok(())
     }
 
@@ -522,33 +523,33 @@ impl Compiler {
             }
         }
 
-        let mut loop_start = self.emiter.chunk.code.len();
+        let mut loop_start = self.function.chunk.code.len();
         let mut exit_jump:Option<usize> = None;
         if tokens.last() != Some(&Token::Semicolon) {
             self.consume_expression(tokens)?;
-            exit_jump = Some(self.emiter.emit_jump(OP_JUMP_IF_FALSE));
-            self.emiter.emit_byte(OP_POP);
+            exit_jump = Some(self.function.emit_jump(OP_JUMP_IF_FALSE));
+            self.function.emit_byte(OP_POP);
         }
         self.consume(Token::Semicolon, tokens, "Expect ';' after condition.")?;
 
         if tokens.last() != Some(&Token::RightParen) {
-            let body_jump = self.emiter.emit_jump(OP_JUMP);
-            let increment_start = self.emiter.chunk.code.len();
+            let body_jump = self.function.emit_jump(OP_JUMP);
+            let increment_start = self.function.chunk.code.len();
             self.consume_expression(tokens)?;
-            self.emiter.emit_byte(OP_POP);
+            self.function.emit_byte(OP_POP);
             self.consume(Token::RightParen, tokens, "Expect ')' after for clauses.")?;
             
-            self.emiter.emit_loop(loop_start);
+            self.function.emit_loop(loop_start);
             loop_start = increment_start;
-            self.emiter.patch_jump(body_jump);
+            self.function.patch_jump(body_jump);
         }
 
         self.consume_stmt(tokens)?; // body statement
-        self.emiter.emit_loop(loop_start);
+        self.function.emit_loop(loop_start);
 
         if let Some(exit_jump) = exit_jump {
-            self.emiter.patch_jump(exit_jump);
-            self.emiter.emit_byte(OP_POP);
+            self.function.patch_jump(exit_jump);
+            self.function.emit_byte(OP_POP);
         }
         self.end_scope()?;
         InterpretResult::Ok(())
@@ -557,72 +558,7 @@ impl Compiler {
 }
     
 
-#[derive(Debug)]
-pub struct ByteEmiter {
-    chunk: Chunk,
-}
 
-impl ByteEmiter {
-    fn new() -> Self {
-        Self { 
-            chunk: Chunk::new(),
-        }
-    }
-
-    fn return_chunk(&self) -> Chunk {
-        self.chunk.clone()
-    }
-
-    fn emit_byte(&mut self, byte: u8) {
-        self.chunk.write_chunk(byte);
-    }
-
-    fn emit_bytes(&mut self, byte1: u8, byte2: u8) {
-        self.emit_byte(byte1);
-        self.emit_byte(byte2);
-    }
-
-    fn emit_return(&mut self) {
-        self.emit_byte(OP_RETURN);
-    }
-
-    fn emit_jump(&mut self, instruction: u8) -> usize {
-        self.emit_byte(instruction);
-        self.emit_byte(0xff);
-        self.emit_byte(0xff);
-        self.chunk.code.len() - 2
-    }
-
-    fn emit_loop(&mut self, loop_start: usize) {
-        self.emit_byte(OP_LOOP);
-        let offset = self.chunk.code.len() - loop_start + 2;
-        self.emit_byte((offset >> 8) as u8);
-        self.emit_byte((offset & 0xff) as u8);
-    }
-
-    fn patch_jump(&mut self, offset: usize) {
-        let jump = self.chunk.code.len() - offset - 2;
-        self.chunk.code[offset] = ((jump >> 8) & 0xff) as u8;
-        self.chunk.code[offset + 1] = (jump & 0xff) as u8;
-    }
-
-    fn emit_constant(&mut self, value: Value) {
-        let constant = self.chunk.add_constant(value);
-        self.emit_bytes(OP_CONSTANT, constant as u8);
-    }
-
-    fn make_string(&mut self, value: String) -> u8 {
-        let constant = self.chunk.add_constant(Value::String(value));
-        constant as u8
-    }
-
-    fn make_constant(&mut self, value: Value) -> u8 {
-        let constant = self.chunk.add_constant(value);
-        constant as u8
-    }
-
-
-}
 #[derive(Debug)]
 struct Local {
     name: String,
