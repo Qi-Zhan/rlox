@@ -11,6 +11,5 @@ for (;;) class Foo {}
 fn test_files_for_class_in_body() {
     
     let result: InterpretResult<Vec<String>>= run(SOURCE);
-    
     assert!(matches!(result, InterpretResult::CompileError{..}));
 }

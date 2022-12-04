@@ -8,7 +8,6 @@ if (true) "ok"; else class Foo {}
 "#;
 
 #[test]
-#[ignore = "class"]
 fn test_files_if_class_in_else() {
     
     let result: InterpretResult<Vec<String>>= run(SOURCE);

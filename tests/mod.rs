@@ -1,6 +1,6 @@
 
 mod forstmt {
-    // mod for_class_in_body;
+    mod for_class_in_body;
     // mod for_closure_in_body;
     // mod for_fun_in_body;
     // mod for_return_closure;
@@ -9,7 +9,7 @@ mod forstmt {
     mod for_statement_condition;
     mod for_statement_increment;
     mod for_statement_initializer;
-    // mod for_syntax; // function
+    mod for_syntax; // function
     mod for_var_in_body;
 }
 mod whilestmt {
