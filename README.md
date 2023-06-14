@@ -1,2 +1,2 @@
 # rlox
-lox implementation in rust with tests.
+[lox](https://craftinginterpreters.com/contents.html) implementation in rust with tests.
